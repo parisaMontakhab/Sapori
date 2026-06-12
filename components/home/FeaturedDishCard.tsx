@@ -4,11 +4,8 @@ import Image from "next/image";
 import Link from "next/link";
 import AddToCartButton from "@/components/AddToCartButton";
 import type { Product } from "@/types";
-import { FALLBACK_IMAGE, PRODUCT_IMAGES } from "./foodImages";
 
 export default function FeaturedDishCard({ product }: { product: Product }) {
-  const imageUrl = PRODUCT_IMAGES[product.id] ?? FALLBACK_IMAGE;
-
   return (
     <article className="group overflow-hidden rounded-3xl bg-white shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
       <Link
@@ -16,7 +13,7 @@ export default function FeaturedDishCard({ product }: { product: Product }) {
         className="relative block aspect-[4/3] overflow-hidden"
       >
         <Image
-          src={imageUrl}
+          src={product.imageUrl}
           alt={product.name}
           fill
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"

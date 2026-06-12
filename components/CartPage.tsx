@@ -1,5 +1,6 @@
 "use client";
 
+import BackButton from "@/components/BackButton";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { createOrder } from "@/services/orderService";
@@ -51,6 +52,9 @@ export default function CartPage() {
 
   return (
     <div className="mx-auto max-w-2xl">
+      <div className="mb-4">
+        <BackButton />
+      </div>
       <h1 className="mb-2 text-3xl font-bold text-foreground">Your Cart</h1>
       <p className="mb-8 text-foreground/60">
         Review your order before checkout

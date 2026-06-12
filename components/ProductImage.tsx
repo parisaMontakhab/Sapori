@@ -1,14 +1,5 @@
+import Image from "next/image";
 import type { Product } from "@/types";
-
-const categoryStyle: Record<string, { gradient: string; emoji: string }> = {
-  Pizza: { gradient: "from-tomato to-orange", emoji: "🍕" },
-  Pasta: { gradient: "from-orange to-orange-light", emoji: "🍝" },
-  Antipasti: { gradient: "from-basil-light to-basil", emoji: "🥖" },
-  Dolci: { gradient: "from-orange-light to-cream-dark", emoji: "🍰" },
-  Insalate: { gradient: "from-basil to-basil-light", emoji: "🥗" },
-};
-
-const defaultStyle = { gradient: "from-tomato to-orange", emoji: "🍽️" };
 
 export default function ProductImage({
   product,
@@ -17,17 +8,27 @@ export default function ProductImage({
   product: Product;
   large?: boolean;
 }) {
-  const style = categoryStyle[product.category] ?? defaultStyle;
-
   return (
     <div
-      className={`flex items-center justify-center bg-gradient-to-br ${style.gradient} ${
-        large ? "h-72 sm:h-96" : "h-44"
+      className={`relative w-full overflow-hidden ${
+        large ? "h-72 sm:h-96" : "h-[220px]"
       }`}
     >
-      <span className={large ? "text-8xl" : "text-5xl"} role="img" aria-hidden>
-        {style.emoji}
-      </span>
+      <Image
+        src={product.imageUrl}
+        alt={product.name}
+        fill
+        sizes={
+          large
+            ? "(max-width: 768px) 100vw, 768px"
+            : "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+        }
+        className={
+          product.category === "Drinks"
+            ? "object-cover object-center"
+            : "object-cover"
+        }
+      />
     </div>
   );
 }

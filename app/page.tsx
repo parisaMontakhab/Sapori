@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import FeaturedDishCard from "@/components/home/FeaturedDishCard";
+import ProductCard from "@/components/ProductCard";
 import HomeSearchBar from "@/components/home/HomeSearchBar";
 import { HERO_IMAGE } from "@/components/home/foodImages";
 import { getProducts } from "@/services/productService";
@@ -15,7 +15,7 @@ const CATEGORIES = [
 
 export default async function Home() {
   const products = await getProducts();
-  const featured = products.slice(0, 3);
+  const featured = products.slice(0, 6);
 
   return (
     <div className="space-y-14 pb-4">
@@ -109,7 +109,7 @@ export default async function Home() {
 
         <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
           {featured.map((product) => (
-            <FeaturedDishCard key={product.id} product={product} />
+            <ProductCard key={product.id} product={product} />
           ))}
         </div>
 

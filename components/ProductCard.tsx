@@ -8,7 +8,10 @@ import ProductImage from "./ProductImage";
 export default function ProductCard({ product }: { product: Product }) {
   return (
     <article className="overflow-hidden rounded-2xl bg-white shadow-md transition-shadow hover:shadow-xl">
-      <Link href={`/product/${product.id}`} className="block">
+      <Link
+        href={`/product/${product.id}`}
+        className="block overflow-hidden rounded-t-2xl"
+      >
         <ProductImage product={product} />
       </Link>
 
