@@ -26,6 +26,15 @@
 }
 
 body {
-  background: var(--cream);
+  background-color: var(--cream);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='320' viewBox='0 0 320 320'%3E%3Cg opacity='0.07' font-size='28' font-family='Apple Color Emoji, Segoe UI Emoji, Noto Color Emoji, sans-serif'%3E%3Ctext x='30' y='50' transform='rotate(-14 30 50)'%3E%F0%9F%8D%95%3C/text%3E%3Ctext x='210' y='70' transform='rotate(12 210 70)'%3E%F0%9F%8D%9D%3C/text%3E%3Ctext x='260' y='190' transform='rotate(-10 260 190)'%3E%F0%9F%8D%94%3C/text%3E%3Ctext x='80' y='210' transform='rotate(15 80 210)'%3E%F0%9F%A5%A4%3C/text%3E%3Ctext x='200' y='270' transform='rotate(-8 200 270)'%3E%F0%9F%8D%B0%3C/text%3E%3Ctext x='45' y='280' transform='rotate(10 45 280)'%3E%F0%9F%8D%B4%3C/text%3E%3C/g%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 280px 280px;
   color: var(--foreground);
+}
+
+@media (max-width: 640px) {
+  body {
+    background-size: 220px 220px;
+  }
 }

@@ -1,4 +1,3 @@
-import BackButton from "@/components/BackButton";
 import ProductCard from "@/components/ProductCard";
 import SearchBar from "@/components/SearchBar";
 import { getProducts } from "@/services/productService";
@@ -24,8 +23,6 @@ export default async function MenuPage({
 
   return (
     <div className="space-y-8">
-      <BackButton />
-
       {/* Header */}
       <div className="rounded-2xl bg-white p-6 shadow-md sm:p-8">
         <h1 className="text-3xl font-bold text-foreground">Our Menu</h1>
