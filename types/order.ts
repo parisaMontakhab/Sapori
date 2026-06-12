@@ -1,32 +1,17 @@
-import type { Address } from "./address";
-
-export type OrderStatus =
-  | "pending"
-  | "confirmed"
-  | "preparing"
-  | "out_for_delivery"
-  | "delivered"
-  | "cancelled";
-
 export interface OrderItem {
-  menuItemId: string;
+  productId: string;
   name: string;
+  price: number;
   quantity: number;
-  unitPrice: number;
-  subtotal: number;
 }
+
+export type OrderStatus = "pending" | "delivered";
 
 export interface Order {
   id: string;
   userId: string;
-  restaurantId: string;
   items: OrderItem[];
-  status: OrderStatus;
-  subtotal: number;
-  deliveryFee: number;
   total: number;
-  deliveryAddress: Address;
-  notes?: string;
-  createdAt: Date;
-  updatedAt: Date;
+  status: OrderStatus;
+  createdAt: string;
 }

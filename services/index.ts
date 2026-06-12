@@ -1,15 +1,3 @@
-export {
-  getRestaurants,
-  getRestaurantById,
-  getRestaurantBySlug,
-  getFeaturedRestaurants,
-  getOpenRestaurants,
-} from "./restaurantService";
-
-export {
-  getMenuItemsByRestaurant,
-  getMenuItemById,
-  getCategories,
-  getCategoryById,
-  getMenuItemsByRestaurantAndCategory,
-} from "./menuService";
+export { login, register, getUserById } from "./authService";
+export { getProducts, getProductById } from "./productService";
+export { getOrdersByUser, getOrderById, createOrder } from "./orderService";
