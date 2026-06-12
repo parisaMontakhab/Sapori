@@ -35,7 +35,7 @@ export default function LoginForm() {
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="w-full rounded-xl border border-cream-dark bg-cream px-4 py-3 focus:border-basil focus:ring-2 focus:ring-basil/20 focus:outline-none"
+          className="w-full min-w-0 rounded-xl border border-cream-dark bg-cream px-4 py-3 focus:border-basil focus:ring-2 focus:ring-basil/20 focus:outline-none"
           required
         />
       </div>
@@ -47,7 +47,7 @@ export default function LoginForm() {
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="w-full rounded-xl border border-cream-dark bg-cream px-4 py-3 focus:border-basil focus:ring-2 focus:ring-basil/20 focus:outline-none"
+          className="w-full min-w-0 rounded-xl border border-cream-dark bg-cream px-4 py-3 focus:border-basil focus:ring-2 focus:ring-basil/20 focus:outline-none"
           required
         />
       </div>
@@ -58,7 +58,7 @@ export default function LoginForm() {
       )}
       <button
         type="submit"
-        className="rounded-full bg-tomato py-3 font-semibold text-white shadow-md transition-colors hover:bg-tomato-dark"
+        className="min-h-11 w-full rounded-full bg-tomato py-3 font-semibold text-white shadow-md transition-colors hover:bg-tomato-dark"
       >
         Login
       </button>

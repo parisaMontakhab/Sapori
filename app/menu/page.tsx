@@ -24,8 +24,8 @@ export default async function MenuPage({
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="rounded-2xl bg-white p-6 shadow-md sm:p-8">
-        <h1 className="text-3xl font-bold text-foreground">Our Menu</h1>
+      <div className="rounded-2xl bg-white p-5 shadow-md sm:p-8">
+        <h1 className="text-2xl font-bold text-foreground sm:text-3xl">Our Menu</h1>
         <p className="mt-2 text-foreground/60">
           Explore {allProducts.length} dishes across {categories.length}{" "}
           categories — pizza, pasta, antipasti & more.
@@ -63,7 +63,7 @@ export default async function MenuPage({
           <p className="mt-1 text-foreground/60">Try a different search term.</p>
         </div>
       ) : (
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {products.map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}

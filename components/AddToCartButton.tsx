@@ -26,10 +26,10 @@ export default function AddToCartButton({
   return (
     <button
       onClick={handleClick}
-      className={`font-semibold text-white shadow-sm transition-all ${
+      className={`min-h-11 font-semibold text-white shadow-sm transition-all ${
         compact
-          ? "rounded-full bg-orange px-4 py-2 text-sm hover:bg-orange-light"
-          : "rounded-full bg-tomato px-8 py-3 text-base hover:bg-tomato-dark"
+          ? "rounded-full bg-orange px-4 py-2.5 text-sm hover:bg-orange-light"
+          : "rounded-full bg-tomato px-6 py-3 text-base hover:bg-tomato-dark sm:px-8"
       } ${inCart ? "scale-95 bg-basil" : ""}`}
     >
       {inCart ? "✓ Added" : "Add to Cart"}

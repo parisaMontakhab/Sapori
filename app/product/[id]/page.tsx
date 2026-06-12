@@ -25,24 +25,24 @@ export default async function ProductPage({
         ← Back to Menu
       </Link>
 
-      <div className="overflow-hidden rounded-3xl bg-white shadow-xl">
+      <div className="overflow-hidden rounded-2xl bg-white shadow-xl sm:rounded-3xl">
         <ProductImage product={product} large />
 
-        <div className="p-6 sm:p-10">
+        <div className="p-5 sm:p-8 md:p-10">
           <span className="inline-block rounded-full bg-basil/10 px-4 py-1.5 text-sm font-semibold text-basil">
             {product.category}
           </span>
 
-          <h1 className="mt-4 text-3xl font-bold text-foreground sm:text-4xl">
+          <h1 className="mt-3 text-2xl font-bold text-foreground sm:mt-4 sm:text-3xl md:text-4xl">
             {product.name}
           </h1>
 
-          <p className="mt-4 max-w-2xl text-lg leading-relaxed text-foreground/70">
+          <p className="mt-3 max-w-2xl text-base leading-relaxed text-foreground/70 sm:mt-4 sm:text-lg">
             {product.description}
           </p>
 
-          <div className="mt-8 flex flex-wrap items-center gap-6 border-t border-cream-dark pt-8">
-            <span className="text-3xl font-bold text-tomato">
+          <div className="mt-6 flex flex-col gap-4 border-t border-cream-dark pt-6 sm:mt-8 sm:flex-row sm:flex-wrap sm:items-center sm:gap-6 sm:pt-8">
+            <span className="text-2xl font-bold text-tomato sm:text-3xl">
               €{product.price}
             </span>
             <AddToCartButton product={product} />

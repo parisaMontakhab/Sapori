@@ -18,9 +18,9 @@ export default async function Home() {
   const featured = products.slice(0, 6);
 
   return (
-    <div className="space-y-14 pb-4">
+    <div className="space-y-10 pb-4 sm:space-y-14">
       {/* Hero */}
-      <section className="relative min-h-[520px] overflow-hidden rounded-[2rem] shadow-2xl sm:min-h-[560px]">
+      <section className="relative min-h-[400px] overflow-hidden rounded-2xl shadow-2xl sm:min-h-[520px] sm:rounded-[2rem] md:min-h-[560px]">
         <Image
           src={HERO_IMAGE}
           alt="Italian food spread with pasta and fresh ingredients"
@@ -31,16 +31,16 @@ export default async function Home() {
         />
         <div className="absolute inset-0 bg-gradient-to-br from-black/75 via-tomato/60 to-amber-600/50" />
 
-        <div className="relative z-10 flex h-full min-h-[520px] flex-col justify-center px-6 py-12 sm:min-h-[560px] sm:px-12 sm:py-16 lg:px-16">
-          <span className="mb-4 inline-flex w-fit items-center gap-2 rounded-full bg-amber-400/90 px-4 py-1.5 text-sm font-bold text-foreground shadow-md">
+        <div className="relative z-10 flex h-full min-h-[400px] flex-col justify-center px-4 py-10 sm:min-h-[520px] sm:px-8 sm:py-12 md:min-h-[560px] md:px-12 md:py-16 lg:px-16">
+          <span className="mb-3 inline-flex w-fit max-w-full items-center gap-2 rounded-full bg-amber-400/90 px-3 py-1.5 text-xs font-bold text-foreground shadow-md sm:mb-4 sm:px-4 sm:text-sm">
             🇮🇹 Sapori — Italian delivery
           </span>
 
-          <h1 className="max-w-xl text-4xl leading-tight font-extrabold tracking-tight text-white sm:text-5xl lg:text-6xl">
+          <h1 className="max-w-xl text-3xl leading-tight font-extrabold tracking-tight text-white sm:text-4xl md:text-5xl lg:text-6xl">
             Italian flavors, delivered fast.
           </h1>
 
-          <p className="mt-4 max-w-lg text-lg leading-relaxed text-white/90 sm:text-xl">
+          <p className="mt-3 max-w-lg text-base leading-relaxed text-white/90 sm:mt-4 sm:text-lg md:text-xl">
             Order fresh pasta, pizza, desserts and Mediterranean favorites from
             Sapori.
           </p>
@@ -49,16 +49,16 @@ export default async function Home() {
             <HomeSearchBar />
           </div>
 
-          <div className="mt-6 flex flex-wrap gap-3">
+          <div className="mt-6 flex w-full flex-col gap-3 sm:mt-8 sm:w-auto sm:flex-row">
             <Link
               href="/menu"
-              className="rounded-2xl bg-amber-400 px-8 py-3.5 font-bold text-foreground shadow-lg transition-transform hover:scale-[1.02] hover:bg-amber-300"
+              className="flex min-h-11 items-center justify-center rounded-2xl bg-amber-400 px-6 py-3 font-bold text-foreground shadow-lg transition-transform hover:scale-[1.02] hover:bg-amber-300 sm:px-8 sm:py-3.5"
             >
               Explore menu
             </Link>
             <Link
               href="/cart"
-              className="rounded-2xl border-2 border-white/80 bg-white/10 px-8 py-3.5 font-bold text-white shadow-lg backdrop-blur-sm transition-transform hover:scale-[1.02] hover:bg-white/20"
+              className="flex min-h-11 items-center justify-center rounded-2xl border-2 border-white/80 bg-white/10 px-6 py-3 font-bold text-white shadow-lg backdrop-blur-sm transition-transform hover:scale-[1.02] hover:bg-white/20 sm:px-8 sm:py-3.5"
             >
               View cart
             </Link>
@@ -68,15 +68,15 @@ export default async function Home() {
 
       {/* Category pills */}
       <section>
-        <h2 className="mb-5 text-2xl font-bold text-foreground">
+        <h2 className="mb-4 text-xl font-bold text-foreground sm:mb-5 sm:text-2xl">
           What are you craving?
         </h2>
-        <div className="flex gap-3 overflow-x-auto pb-2">
+        <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-2 sm:gap-3">
           {CATEGORIES.map((cat) => (
             <Link
               key={cat.label}
               href={`/menu?search=${encodeURIComponent(cat.search)}`}
-              className="flex shrink-0 items-center gap-2 rounded-2xl bg-white px-5 py-3 font-semibold text-foreground shadow-md transition-all hover:-translate-y-0.5 hover:shadow-lg"
+              className="flex min-h-11 shrink-0 items-center gap-2 rounded-2xl bg-white px-4 py-2.5 text-sm font-semibold text-foreground shadow-md transition-all hover:-translate-y-0.5 hover:shadow-lg sm:px-5 sm:py-3 sm:text-base"
             >
               <span className="text-xl">{cat.emoji}</span>
               {cat.label}
@@ -92,7 +92,7 @@ export default async function Home() {
             <p className="text-sm font-bold tracking-wider text-orange uppercase">
               Chef&apos;s picks
             </p>
-            <h2 className="mt-1 text-3xl font-bold text-foreground">
+            <h2 className="mt-1 text-2xl font-bold text-foreground sm:text-3xl">
               Featured dishes
             </h2>
             <p className="mt-2 text-foreground/60">
@@ -107,7 +107,7 @@ export default async function Home() {
           </Link>
         </div>
 
-        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 sm:gap-8 lg:grid-cols-3">
           {featured.map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}
@@ -122,7 +122,7 @@ export default async function Home() {
       </section>
 
       {/* Promotional banner */}
-      <section className="relative overflow-hidden rounded-[2rem] bg-gradient-to-r from-amber-400 via-orange to-orange-light p-8 shadow-xl sm:p-10">
+      <section className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-amber-400 via-orange to-orange-light p-6 shadow-xl sm:rounded-[2rem] sm:p-10">
         <div className="absolute -top-6 -right-6 h-32 w-32 rounded-full bg-white/20 blur-2xl" />
         <div className="absolute -bottom-8 -left-8 h-40 w-40 rounded-full bg-tomato/10 blur-2xl" />
 
@@ -131,7 +131,7 @@ export default async function Home() {
             <p className="text-sm font-extrabold tracking-wider text-tomato uppercase">
               Weekend Special
             </p>
-            <h2 className="mt-2 text-2xl font-extrabold text-foreground sm:text-3xl">
+            <h2 className="mt-2 text-xl font-extrabold text-foreground sm:text-2xl md:text-3xl">
               Free delivery on orders over €25
             </h2>
             <p className="mt-2 max-w-md text-foreground/70">
@@ -144,7 +144,7 @@ export default async function Home() {
           </div>
           <Link
             href="/menu"
-            className="shrink-0 rounded-2xl bg-tomato px-8 py-4 font-bold text-white shadow-lg transition-transform hover:scale-[1.02] hover:bg-tomato-dark"
+            className="flex min-h-11 w-full shrink-0 items-center justify-center rounded-2xl bg-tomato px-6 py-3 font-bold text-white shadow-lg transition-transform hover:scale-[1.02] hover:bg-tomato-dark sm:w-auto sm:px-8 sm:py-4"
           >
             Order now
           </Link>

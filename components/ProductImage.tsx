@@ -11,7 +11,7 @@ export default function ProductImage({
   return (
     <div
       className={`relative w-full overflow-hidden ${
-        large ? "h-72 sm:h-96" : "h-[220px]"
+        large ? "h-56 sm:h-72 md:h-96" : "h-[200px] sm:h-[220px]"
       }`}
     >
       <Image

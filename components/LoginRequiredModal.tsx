@@ -20,7 +20,7 @@ export default function LoginRequiredModal({
         onClick={onClose}
         aria-label="Close"
       />
-      <div className="relative w-full max-w-md rounded-2xl bg-white p-8 text-center shadow-xl">
+      <div className="relative mx-4 w-full max-w-md rounded-2xl bg-white p-6 text-center shadow-xl sm:mx-0 sm:p-8">
         <p className="text-4xl" aria-hidden>
           🔐
         </p>
@@ -33,17 +33,17 @@ export default function LoginRequiredModal({
         <p className="mt-2 text-sm text-foreground/60">
           Sign in to save your order and track delivery.
         </p>
-        <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
+        <div className="mt-8 flex flex-col gap-3">
           <Link
             href="/login"
-            className="rounded-full bg-orange px-8 py-3 font-bold text-white shadow-md transition-colors hover:bg-orange-light"
+            className="flex min-h-11 items-center justify-center rounded-full bg-orange px-8 py-3 font-bold text-white shadow-md transition-colors hover:bg-orange-light"
           >
             Login
           </Link>
           <Link
             href="/menu"
             onClick={onClose}
-            className="rounded-full border border-cream-dark px-8 py-3 font-semibold text-foreground/80 transition-colors hover:bg-cream"
+            className="flex min-h-11 items-center justify-center rounded-full border border-cream-dark px-8 py-3 font-semibold text-foreground/80 transition-colors hover:bg-cream"
           >
             Continue browsing
           </Link>

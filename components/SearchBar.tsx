@@ -18,17 +18,20 @@ export default function SearchBar({ defaultValue = "" }: { defaultValue?: string
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex w-full max-w-xl gap-2">
+    <form
+      onSubmit={handleSubmit}
+      className="flex w-full max-w-xl flex-col gap-3 sm:flex-row sm:gap-2"
+    >
       <input
         type="search"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         placeholder="Search pizza, pasta, dolci..."
-        className="flex-1 rounded-full border-0 bg-white/95 px-5 py-3 text-foreground shadow-md placeholder:text-foreground/40 focus:ring-2 focus:ring-orange-light focus:outline-none"
+        className="min-h-11 w-full min-w-0 flex-1 rounded-full border-0 bg-white/95 px-4 py-3 text-foreground shadow-md placeholder:text-foreground/40 focus:ring-2 focus:ring-orange-light focus:outline-none sm:px-5"
       />
       <button
         type="submit"
-        className="rounded-full bg-basil px-6 py-3 font-semibold text-white shadow-md transition-colors hover:bg-basil-light"
+        className="min-h-11 shrink-0 rounded-full bg-basil px-6 py-3 font-semibold text-white shadow-md transition-colors hover:bg-basil-light sm:px-6"
       >
         Search
       </button>

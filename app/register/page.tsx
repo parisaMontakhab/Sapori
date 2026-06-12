@@ -3,8 +3,8 @@ import RegisterForm from "@/components/RegisterForm";
 
 export default function RegisterPage() {
   return (
-    <div className="mx-auto max-w-md">
-      <div className="rounded-2xl bg-white p-8 shadow-xl sm:p-10">
+    <div className="mx-auto w-full max-w-md">
+      <div className="rounded-2xl bg-white p-6 shadow-xl sm:p-8 md:p-10">
         <div className="mb-8 text-center">
           <p className="text-4xl">🇮🇹</p>
           <h1 className="mt-3 text-2xl font-bold text-foreground">

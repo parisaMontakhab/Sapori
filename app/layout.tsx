@@ -19,12 +19,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className="overflow-x-hidden">
       <body
-        className={`${geist.className} flex min-h-screen flex-col bg-cream text-foreground`}
+        className={`${geist.className} flex min-h-screen flex-col overflow-x-hidden bg-cream text-foreground`}
       >
         <Navbar />
-        <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-8 sm:px-6 sm:py-10">
+        <main className="mx-auto w-full max-w-6xl flex-1 px-3 py-6 sm:px-6 sm:py-10">
           {children}
         </main>
         <Footer />

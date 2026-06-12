@@ -72,7 +72,7 @@ export default function ProfilePage() {
 
   if (!user) {
     return (
-      <div className="mx-auto max-w-md rounded-2xl bg-white p-12 text-center shadow-md">
+      <div className="mx-auto max-w-md rounded-2xl bg-white p-8 text-center shadow-md sm:p-12">
         <p className="text-5xl">👋</p>
         <p className="mt-4 text-lg font-medium">You are not logged in</p>
         <p className="mt-1 text-foreground/60">
@@ -80,7 +80,7 @@ export default function ProfilePage() {
         </p>
         <Link
           href="/login"
-          className="mt-6 inline-block rounded-full bg-tomato px-8 py-3 font-semibold text-white shadow-md hover:bg-tomato-dark"
+          className="mt-6 inline-flex min-h-11 items-center justify-center rounded-full bg-tomato px-8 py-3 font-semibold text-white shadow-md hover:bg-tomato-dark"
         >
           Go to Login
         </Link>
@@ -94,33 +94,33 @@ export default function ProfilePage() {
   return (
     <div className="mx-auto max-w-4xl space-y-8">
       <div>
-        <h1 className="text-3xl font-bold text-foreground">My Profile</h1>
+        <h1 className="text-2xl font-bold text-foreground sm:text-3xl">My Profile</h1>
         <p className="mt-1 text-foreground/60">
           Manage your account and orders
         </p>
       </div>
 
       <div className="overflow-hidden rounded-3xl bg-white shadow-md">
-        <div className="bg-gradient-to-r from-tomato/10 via-orange/10 to-cream-dark px-6 py-5 sm:px-8">
-          <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-center gap-5">
-              <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-tomato to-orange text-3xl font-bold text-white shadow-md">
+        <div className="bg-gradient-to-r from-tomato/10 via-orange/10 to-cream-dark px-4 py-5 sm:px-8">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between sm:gap-5">
+            <div className="flex min-w-0 items-center gap-4 sm:gap-5">
+              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-tomato to-orange text-2xl font-bold text-white shadow-md sm:h-20 sm:w-20 sm:text-3xl">
                 {user.name.charAt(0).toUpperCase()}
               </div>
-              <div>
-                <p className="text-2xl font-bold text-foreground">
+              <div className="min-w-0">
+                <p className="truncate text-xl font-bold text-foreground sm:text-2xl">
                   {user.name}
                 </p>
                 <p className="mt-1 text-sm text-foreground/60">
                   Food Lover • Member since 2026
                 </p>
-                <p className="mt-2 text-sm text-foreground/70">{user.email}</p>
+                <p className="mt-2 truncate text-sm text-foreground/70">{user.email}</p>
               </div>
             </div>
             <button
               type="button"
               onClick={handleLogout}
-              className="self-start rounded-full border border-tomato/30 bg-white px-6 py-2.5 text-sm font-semibold text-tomato transition-colors hover:bg-tomato/5 sm:self-center"
+              className="min-h-11 self-stretch rounded-full border border-tomato/30 bg-white px-6 py-2.5 text-sm font-semibold text-tomato transition-colors hover:bg-tomato/5 sm:self-center"
             >
               Logout
             </button>
@@ -202,7 +202,7 @@ export default function ProfilePage() {
                     )}
                   </div>
 
-                  <div className="flex min-w-0 flex-1 flex-col justify-between gap-3 sm:flex-row sm:items-center">
+                  <div className="flex min-w-0 flex-1 flex-col justify-between gap-3">
                     <div className="min-w-0">
                       <div className="flex flex-wrap items-center gap-2">
                         <p className="font-bold text-foreground">
@@ -226,9 +226,9 @@ export default function ProfilePage() {
                       </p>
                     </div>
 
-                    <div className="sm:text-right">
-                      <p className="text-sm text-foreground/60">Total</p>
-                      <p className="text-2xl font-bold text-tomato">
+                    <div className="flex items-center justify-between gap-3 sm:flex-col sm:items-end sm:justify-center">
+                      <p className="text-sm text-foreground/60 sm:text-right">Total</p>
+                      <p className="text-xl font-bold text-tomato sm:text-2xl">
                         €{order.total}
                       </p>
                     </div>

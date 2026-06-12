@@ -77,13 +77,13 @@ export default function CartPage() {
     <div
       className={`mx-auto ${items.length > 0 ? "max-w-6xl" : "max-w-2xl"}`}
     >
-      <h1 className="mb-2 text-3xl font-bold text-foreground">Your Cart</h1>
-      <p className="mb-8 text-foreground/60">
+      <h1 className="mb-2 text-2xl font-bold text-foreground sm:text-3xl">Your Cart</h1>
+      <p className="mb-6 text-foreground/60 sm:mb-8">
         Review your order before checkout
       </p>
 
       {items.length === 0 ? (
-        <div className="rounded-2xl bg-white p-12 text-center shadow-md">
+        <div className="rounded-2xl bg-white p-8 text-center shadow-md sm:p-12">
           <p className="text-5xl">🛒</p>
           <p className="mt-4 text-lg font-medium">Your cart is empty</p>
           <p className="mt-1 text-foreground/60">
@@ -91,7 +91,7 @@ export default function CartPage() {
           </p>
           <Link
             href="/menu"
-            className="mt-6 inline-block rounded-full bg-tomato px-8 py-3 font-semibold text-white shadow-md hover:bg-tomato-dark"
+            className="mt-6 inline-flex min-h-11 items-center justify-center rounded-full bg-tomato px-8 py-3 font-semibold text-white shadow-md hover:bg-tomato-dark"
           >
             Browse Menu
           </Link>
@@ -127,7 +127,7 @@ export default function CartPage() {
                     )}
                   </Link>
 
-                  <div className="flex min-w-0 flex-1 flex-col justify-between gap-3 sm:flex-row sm:items-center">
+                  <div className="flex min-w-0 flex-1 flex-col justify-between gap-3">
                     <div className="min-w-0">
                       {product?.category && (
                         <span className="mb-2 inline-block rounded-full bg-basil/10 px-3 py-1 text-xs font-semibold text-basil">
@@ -150,14 +150,14 @@ export default function CartPage() {
                       </div>
                     </div>
 
-                    <div className="flex items-center justify-between gap-4 sm:flex-col sm:items-end sm:justify-center">
-                      <span className="text-xl font-bold text-tomato">
+                    <div className="flex items-center justify-between gap-3 sm:justify-end">
+                      <span className="text-lg font-bold text-tomato sm:text-xl">
                         {formatEuro(lineTotal)}
                       </span>
                       <button
                         type="button"
                         onClick={() => handleRemove(item.productId)}
-                        className="inline-flex items-center gap-1.5 rounded-full border border-tomato/20 px-4 py-1.5 text-sm font-medium text-tomato transition-colors hover:bg-tomato/10"
+                        className="inline-flex min-h-11 items-center gap-1.5 rounded-full border border-tomato/20 px-4 py-2 text-sm font-medium text-tomato transition-colors hover:bg-tomato/10"
                       >
                         <span aria-hidden>🗑</span>
                         Remove
@@ -170,7 +170,7 @@ export default function CartPage() {
           </div>
 
           <aside className="lg:col-span-1">
-            <div className="rounded-2xl bg-white p-6 shadow-md lg:sticky lg:top-[100px]">
+            <div className="rounded-2xl bg-white p-5 shadow-md sm:p-6 lg:sticky lg:top-[100px]">
               <h2 className="text-lg font-bold text-foreground">
                 Order Summary
               </h2>
@@ -219,7 +219,7 @@ export default function CartPage() {
               <button
                 type="button"
                 onClick={handleCheckout}
-                className="mt-6 w-full rounded-full bg-orange py-3.5 font-bold text-white shadow-md transition-colors hover:bg-orange-light"
+                className="mt-6 min-h-11 w-full rounded-full bg-orange py-3.5 font-bold text-white shadow-md transition-colors hover:bg-orange-light"
               >
                 Place Order
               </button>

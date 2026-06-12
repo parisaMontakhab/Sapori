@@ -5,7 +5,7 @@ const valuePoints = ["Fresh Daily", "Fast Delivery", "Made in Rome"];
 export default function Footer() {
   return (
     <footer className="border-t border-cream-dark bg-gradient-to-b from-white to-cream">
-      <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-12">
+      <div className="mx-auto max-w-6xl px-3 py-8 sm:px-6 sm:py-12">
         <div className="text-center">
           <Link href="/" className="inline-flex items-center gap-2">
             <span className="text-2xl" role="img" aria-hidden>

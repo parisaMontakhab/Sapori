@@ -24,11 +24,11 @@ export default function HomeSearchBar() {
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         placeholder="Search pizza, pasta, tiramisu..."
-        className="flex-1 rounded-2xl border-0 bg-white px-5 py-4 text-foreground shadow-lg placeholder:text-foreground/40 focus:ring-4 focus:ring-amber-300/50 focus:outline-none"
+        className="min-h-11 w-full min-w-0 flex-1 rounded-2xl border-0 bg-white px-4 py-3 text-foreground shadow-lg placeholder:text-foreground/40 focus:ring-4 focus:ring-amber-300/50 focus:outline-none sm:px-5 sm:py-4"
       />
       <button
         type="submit"
-        className="rounded-2xl bg-tomato px-8 py-4 font-bold text-white shadow-lg transition-transform hover:scale-[1.02] hover:bg-tomato-dark"
+        className="min-h-11 shrink-0 rounded-2xl bg-tomato px-6 py-3 font-bold text-white shadow-lg transition-transform hover:scale-[1.02] hover:bg-tomato-dark sm:px-8 sm:py-4"
       >
         Search
       </button>
