@@ -9,6 +9,22 @@ export interface CartItem {
 
 const CART_KEY = "sapori_cart";
 
+type CartListener = () => void;
+const listeners = new Set<CartListener>();
+
+export function subscribeToCart(listener: CartListener): () => void {
+  listeners.add(listener);
+  return () => listeners.delete(listener);
+}
+
+function notifyCartChange(): void {
+  listeners.forEach((listener) => listener());
+}
+
+export function isInCart(productId: string): boolean {
+  return getCart().some((item) => item.productId === productId);
+}
+
 export function getCart(): CartItem[] {
   if (typeof window === "undefined") return [];
 
@@ -36,15 +52,18 @@ export function addToCart(product: Product): void {
   }
 
   saveCart(cart);
+  notifyCartChange();
 }
 
 export function removeFromCart(productId: string): void {
   const cart = getCart().filter((item) => item.productId !== productId);
   saveCart(cart);
+  notifyCartChange();
 }
 
 export function clearCart(): void {
   localStorage.removeItem(CART_KEY);
+  notifyCartChange();
 }
 
 export function getCartTotal(items: CartItem[]): number {

@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useSyncExternalStore } from "react";
 import type { Product } from "@/types";
-import { addToCart } from "@/store/cart";
+import { addToCart, isInCart, subscribeToCart } from "@/store/cart";
 
 export default function AddToCartButton({
   product,
@@ -11,14 +11,16 @@ export default function AddToCartButton({
   product: Product;
   compact?: boolean;
 }) {
-  const [added, setAdded] = useState(false);
+  const inCart = useSyncExternalStore(
+    subscribeToCart,
+    () => isInCart(product.id),
+    () => false,
+  );
 
   function handleClick(e: React.MouseEvent) {
     e.preventDefault();
     e.stopPropagation();
     addToCart(product);
-    setAdded(true);
-    setTimeout(() => setAdded(false), 1500);
   }
 
   return (
@@ -28,9 +30,9 @@ export default function AddToCartButton({
         compact
           ? "rounded-full bg-orange px-4 py-2 text-sm hover:bg-orange-light"
           : "rounded-full bg-tomato px-8 py-3 text-base hover:bg-tomato-dark"
-      } ${added ? "scale-95 bg-basil" : ""}`}
+      } ${inCart ? "scale-95 bg-basil" : ""}`}
     >
-      {added ? "Added ✓" : "Add to Cart"}
+      {inCart ? "✓ Added" : "Add to Cart"}
     </button>
   );
 }
