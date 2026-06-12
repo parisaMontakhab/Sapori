@@ -1,11 +1,11 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { getOrdersByUser } from "@/services/orderService";
 import type { Order, User } from "@/types";
 import { getLoggedInUser, logout } from "@/store/auth";
-import { useRouter } from "next/navigation";
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -27,9 +27,16 @@ export default function ProfilePage() {
 
   if (!user) {
     return (
-      <div>
-        <p className="mb-4">You are not logged in.</p>
-        <Link href="/login" className="text-red-700 underline">
+      <div className="mx-auto max-w-md rounded-2xl bg-white p-12 text-center shadow-md">
+        <p className="text-5xl">👋</p>
+        <p className="mt-4 text-lg font-medium">You are not logged in</p>
+        <p className="mt-1 text-foreground/60">
+          Sign in to view your profile and orders.
+        </p>
+        <Link
+          href="/login"
+          className="mt-6 inline-block rounded-full bg-tomato px-8 py-3 font-semibold text-white shadow-md hover:bg-tomato-dark"
+        >
           Go to Login
         </Link>
       </div>
@@ -37,43 +44,87 @@ export default function ProfilePage() {
   }
 
   return (
-    <div>
-      <h1 className="mb-6 text-2xl font-bold">Profile</h1>
+    <div className="space-y-8">
+      <div>
+        <h1 className="text-3xl font-bold text-foreground">My Profile</h1>
+        <p className="mt-1 text-foreground/60">Manage your account and orders</p>
+      </div>
 
-      <div className="mb-8 rounded border p-4">
-        <p>
-          <strong>Name:</strong> {user.name}
-        </p>
-        <p>
-          <strong>Email:</strong> {user.email}
-        </p>
+      {/* User card */}
+      <div className="rounded-2xl bg-white p-6 shadow-md sm:p-8">
+        <div className="flex items-center gap-4">
+          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-tomato to-orange text-2xl text-white">
+            {user.name.charAt(0).toUpperCase()}
+          </div>
+          <div>
+            <p className="text-xl font-bold">{user.name}</p>
+            <p className="text-foreground/60">{user.email}</p>
+          </div>
+        </div>
         <button
           onClick={handleLogout}
-          className="mt-4 text-sm text-red-600 hover:underline"
+          className="mt-6 rounded-full border border-tomato/30 px-6 py-2 text-sm font-medium text-tomato transition-colors hover:bg-tomato/5"
         >
           Logout
         </button>
       </div>
 
-      <h2 className="mb-4 text-xl font-bold">Your Orders</h2>
+      {/* Orders */}
+      <div>
+        <h2 className="mb-4 text-xl font-bold text-foreground">Your Orders</h2>
 
-      {orders.length === 0 ? (
-        <p className="text-zinc-500">No orders yet.</p>
-      ) : (
-        <div className="flex flex-col gap-4">
-          {orders.map((order) => (
-            <div key={order.id} className="rounded border p-4">
-              <p className="font-medium">
-                Order {order.id} — {order.status}
-              </p>
-              <p className="text-sm text-zinc-500">
-                {new Date(order.createdAt).toLocaleDateString()}
-              </p>
-              <p className="mt-2">Total: €{order.total}</p>
-            </div>
-          ))}
-        </div>
-      )}
+        {orders.length === 0 ? (
+          <div className="rounded-2xl bg-white p-8 text-center shadow-md">
+            <p className="text-4xl">📦</p>
+            <p className="mt-3 text-foreground/60">No orders yet.</p>
+            <Link
+              href="/menu"
+              className="mt-4 inline-block text-sm font-semibold text-tomato hover:underline"
+            >
+              Start ordering →
+            </Link>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {orders.map((order) => (
+              <div
+                key={order.id}
+                className="rounded-2xl bg-white p-5 shadow-md sm:p-6"
+              >
+                <div className="flex items-center justify-between">
+                  <p className="font-semibold text-foreground">
+                    Order #{order.id}
+                  </p>
+                  <span
+                    className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                      order.status === "delivered"
+                        ? "bg-basil/10 text-basil"
+                        : "bg-orange/10 text-orange"
+                    }`}
+                  >
+                    {order.status}
+                  </span>
+                </div>
+                <p className="mt-1 text-sm text-foreground/50">
+                  {new Date(order.createdAt).toLocaleDateString("en-GB", {
+                    day: "numeric",
+                    month: "long",
+                    year: "numeric",
+                  })}
+                </p>
+                <ul className="mt-3 space-y-1 text-sm text-foreground/70">
+                  {order.items.map((item) => (
+                    <li key={item.productId}>
+                      {item.quantity}× {item.name}
+                    </li>
+                  ))}
+                </ul>
+                <p className="mt-3 font-bold text-tomato">€{order.total}</p>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

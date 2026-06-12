@@ -8,8 +8,8 @@ const geist = Geist({
 });
 
 export const metadata: Metadata = {
-  title: "Sapori",
-  description: "Italian food delivery — learning project",
+  title: "Sapori — Italian Food Delivery",
+  description: "Order authentic Italian dishes delivered to your door.",
 };
 
 export default function RootLayout({
@@ -19,9 +19,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${geist.className} min-h-screen bg-zinc-50`}>
+      <body className={`${geist.className} min-h-screen bg-cream text-foreground`}>
         <Navbar />
-        <main className="mx-auto max-w-4xl px-4 py-8">{children}</main>
+        <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10">
+          {children}
+        </main>
       </body>
     </html>
   );

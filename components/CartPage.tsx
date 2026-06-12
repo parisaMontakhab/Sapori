@@ -15,6 +15,7 @@ import { getLoggedInUser } from "@/store/auth";
 export default function CartPage() {
   const [items, setItems] = useState<CartItem[]>([]);
   const [message, setMessage] = useState("");
+  const [messageType, setMessageType] = useState<"success" | "error">("success");
 
   useEffect(() => {
     setItems(getCart());
@@ -28,11 +29,13 @@ export default function CartPage() {
   async function handleCheckout() {
     const user = getLoggedInUser();
     if (!user) {
-      setMessage("Please login before checkout.");
+      setMessageType("error");
+      setMessage("Please log in before placing your order.");
       return;
     }
 
     if (items.length === 0) {
+      setMessageType("error");
       setMessage("Your cart is empty.");
       return;
     }
@@ -40,56 +43,91 @@ export default function CartPage() {
     await createOrder(user.id, items);
     clearCart();
     setItems([]);
-    setMessage("Order placed successfully!");
+    setMessageType("success");
+    setMessage("Order placed successfully! Buon appetito! 🍝");
   }
 
   const total = getCartTotal(items);
 
   return (
-    <div>
-      <h1 className="mb-6 text-2xl font-bold">Your Cart</h1>
+    <div className="mx-auto max-w-2xl">
+      <h1 className="mb-2 text-3xl font-bold text-foreground">Your Cart</h1>
+      <p className="mb-8 text-foreground/60">
+        Review your order before checkout
+      </p>
 
       {items.length === 0 ? (
-        <p className="text-zinc-500">
-          Cart is empty.{" "}
-          <Link href="/menu" className="text-red-700 underline">
-            Browse menu
+        <div className="rounded-2xl bg-white p-12 text-center shadow-md">
+          <p className="text-5xl">🛒</p>
+          <p className="mt-4 text-lg font-medium">Your cart is empty</p>
+          <p className="mt-1 text-foreground/60">
+            Add some delicious Italian dishes!
+          </p>
+          <Link
+            href="/menu"
+            className="mt-6 inline-block rounded-full bg-tomato px-8 py-3 font-semibold text-white shadow-md hover:bg-tomato-dark"
+          >
+            Browse Menu
           </Link>
-        </p>
+        </div>
       ) : (
-        <div className="flex flex-col gap-4">
+        <div className="space-y-4">
           {items.map((item) => (
             <div
               key={item.productId}
-              className="flex items-center justify-between rounded border p-4"
+              className="flex items-center justify-between rounded-2xl bg-white p-5 shadow-md"
             >
               <div>
-                <p className="font-medium">{item.name}</p>
-                <p className="text-sm text-zinc-500">
+                <p className="font-semibold text-foreground">{item.name}</p>
+                <p className="mt-1 text-sm text-foreground/60">
                   €{item.price} × {item.quantity}
                 </p>
               </div>
-              <button
-                onClick={() => handleRemove(item.productId)}
-                className="text-sm text-red-600 hover:underline"
-              >
-                Remove
-              </button>
+              <div className="flex items-center gap-4">
+                <span className="font-bold text-tomato">
+                  €{item.price * item.quantity}
+                </span>
+                <button
+                  onClick={() => handleRemove(item.productId)}
+                  className="text-sm font-medium text-tomato hover:underline"
+                >
+                  Remove
+                </button>
+              </div>
             </div>
           ))}
 
-          <p className="text-lg font-bold">Total: €{total}</p>
+          <div className="rounded-2xl bg-white p-6 shadow-md">
+            <div className="flex items-center justify-between border-b border-cream-dark pb-4">
+              <span className="text-foreground/70">Subtotal</span>
+              <span className="font-semibold">€{total}</span>
+            </div>
+            <div className="flex items-center justify-between pt-4">
+              <span className="text-lg font-bold">Total</span>
+              <span className="text-2xl font-bold text-tomato">€{total}</span>
+            </div>
 
-          <button
-            onClick={handleCheckout}
-            className="w-fit rounded bg-red-700 px-4 py-2 text-white hover:bg-red-800"
-          >
-            Place Order
-          </button>
+            <button
+              onClick={handleCheckout}
+              className="mt-6 w-full rounded-full bg-tomato py-3 font-semibold text-white shadow-md transition-colors hover:bg-tomato-dark"
+            >
+              Place Order
+            </button>
+          </div>
         </div>
       )}
 
-      {message && <p className="mt-4 text-sm text-green-700">{message}</p>}
+      {message && (
+        <p
+          className={`mt-4 rounded-xl p-4 text-sm font-medium ${
+            messageType === "success"
+              ? "bg-basil/10 text-basil"
+              : "bg-tomato/10 text-tomato"
+          }`}
+        >
+          {message}
+        </p>
+      )}
     </div>
   );
 }
