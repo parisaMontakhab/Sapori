@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { createOrder } from "@/services/orderService";
 import { getProducts } from "@/services/productService";
+import LoginRequiredModal from "@/components/LoginRequiredModal";
 import QuantityStepper from "@/components/QuantityStepper";
 import {
   clearCart,
@@ -31,6 +32,7 @@ export default function CartPage() {
     getServerCartSnapshot,
   );
   const [products, setProducts] = useState<Product[]>([]);
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState<"success" | "error">("success");
 
@@ -45,8 +47,7 @@ export default function CartPage() {
   async function handleCheckout() {
     const user = getLoggedInUser();
     if (!user) {
-      setMessageType("error");
-      setMessage("Please log in before placing your order.");
+      setShowLoginPrompt(true);
       return;
     }
 
@@ -225,6 +226,10 @@ export default function CartPage() {
             </div>
           </aside>
         </div>
+      )}
+
+      {showLoginPrompt && (
+        <LoginRequiredModal onClose={() => setShowLoginPrompt(false)} />
       )}
 
       {message && (
