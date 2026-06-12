@@ -2,35 +2,44 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { createOrder } from "@/services/orderService";
 import { getProducts } from "@/services/productService";
+import QuantityStepper from "@/components/QuantityStepper";
 import {
   clearCart,
-  getCart,
+  getCartSnapshot,
   getCartTotal,
+  getServerCartSnapshot,
   removeFromCart,
-  type CartItem,
+  subscribeToCart,
 } from "@/store/cart";
 import { getLoggedInUser } from "@/store/auth";
 import type { Product } from "@/types";
 
 const DELIVERY_FEE = 3.5;
+const FREE_DELIVERY_MIN = 25;
+
+function formatEuro(amount: number): string {
+  return Number.isInteger(amount) ? `€${amount}` : `€${amount.toFixed(2)}`;
+}
 
 export default function CartPage() {
-  const [items, setItems] = useState<CartItem[]>([]);
+  const items = useSyncExternalStore(
+    subscribeToCart,
+    getCartSnapshot,
+    getServerCartSnapshot,
+  );
   const [products, setProducts] = useState<Product[]>([]);
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState<"success" | "error">("success");
 
   useEffect(() => {
-    setItems(getCart());
     getProducts().then(setProducts);
   }, []);
 
   function handleRemove(productId: string) {
     removeFromCart(productId);
-    setItems(getCart());
   }
 
   async function handleCheckout() {
@@ -49,13 +58,15 @@ export default function CartPage() {
 
     await createOrder(user.id, items);
     clearCart();
-    setItems([]);
     setMessageType("success");
     setMessage("Order placed successfully! Buon appetito! 🍝");
   }
 
   const subtotal = getCartTotal(items);
-  const total = subtotal + DELIVERY_FEE;
+  const hasFreeDelivery = subtotal >= FREE_DELIVERY_MIN;
+  const deliveryFee = hasFreeDelivery ? 0 : DELIVERY_FEE;
+  const amountForFreeDelivery = Math.max(0, FREE_DELIVERY_MIN - subtotal);
+  const total = subtotal + deliveryFee;
 
   function getProductDetails(productId: string) {
     return products.find((product) => product.id === productId);
@@ -128,22 +139,26 @@ export default function CartPage() {
                         </h2>
                       </Link>
                       <p className="mt-1 text-sm text-foreground/60">
-                        €{item.price} each
+                        {formatEuro(item.price)} each
                       </p>
-                      <p className="mt-2 text-sm font-medium text-foreground/80">
-                        Qty: {item.quantity}
-                      </p>
+                      <div className="mt-3">
+                        <QuantityStepper
+                          productId={item.productId}
+                          quantity={item.quantity}
+                        />
+                      </div>
                     </div>
 
                     <div className="flex items-center justify-between gap-4 sm:flex-col sm:items-end sm:justify-center">
                       <span className="text-xl font-bold text-tomato">
-                        €{lineTotal}
+                        {formatEuro(lineTotal)}
                       </span>
                       <button
                         type="button"
                         onClick={() => handleRemove(item.productId)}
-                        className="rounded-full border border-tomato/20 px-4 py-1.5 text-sm font-medium text-tomato transition-colors hover:bg-tomato/10"
+                        className="inline-flex items-center gap-1.5 rounded-full border border-tomato/20 px-4 py-1.5 text-sm font-medium text-tomato transition-colors hover:bg-tomato/10"
                       >
+                        <span aria-hidden>🗑</span>
                         Remove
                       </button>
                     </div>
@@ -154,7 +169,7 @@ export default function CartPage() {
           </div>
 
           <aside className="lg:col-span-1">
-            <div className="rounded-2xl bg-white p-6 shadow-md lg:sticky lg:top-24">
+            <div className="rounded-2xl bg-white p-6 shadow-md lg:sticky lg:top-[100px]">
               <h2 className="text-lg font-bold text-foreground">
                 Order Summary
               </h2>
@@ -166,21 +181,37 @@ export default function CartPage() {
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-foreground/70">Subtotal</span>
                   <span className="font-semibold text-foreground">
-                    €{subtotal}
+                    {formatEuro(subtotal)}
                   </span>
                 </div>
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-foreground/70">Delivery fee</span>
-                  <span className="font-semibold text-foreground">
-                    €{DELIVERY_FEE.toFixed(2)}
+                  <span
+                    className={`font-semibold ${
+                      hasFreeDelivery
+                        ? "text-basil line-through decoration-foreground/30"
+                        : "text-foreground"
+                    }`}
+                  >
+                    {formatEuro(DELIVERY_FEE)}
                   </span>
                 </div>
+                {hasFreeDelivery ? (
+                  <p className="rounded-xl bg-basil/10 px-3 py-2.5 text-sm font-medium text-basil">
+                    🎉 Free delivery unlocked
+                  </p>
+                ) : (
+                  <p className="rounded-xl bg-orange/10 px-3 py-2.5 text-sm text-foreground/80">
+                    Add {formatEuro(amountForFreeDelivery)} more to get free
+                    delivery 🚚
+                  </p>
+                )}
               </div>
 
               <div className="mt-5 flex items-center justify-between">
                 <span className="text-lg font-bold text-foreground">Total</span>
                 <span className="text-2xl font-bold text-tomato">
-                  €{total.toFixed(2)}
+                  {formatEuro(total)}
                 </span>
               </div>
 

@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useSyncExternalStore } from "react";
+import { getCartItemCount, subscribeToCart } from "@/store/cart";
 
 const links = [
   { href: "/", label: "Home" },
@@ -17,6 +19,11 @@ function isActive(pathname: string, href: string) {
 
 export default function Navbar() {
   const pathname = usePathname();
+  const cartCount = useSyncExternalStore(
+    subscribeToCart,
+    getCartItemCount,
+    () => 0,
+  );
 
   return (
     <nav className="sticky top-0 z-50 border-b border-cream-dark bg-white/90 shadow-sm backdrop-blur-md">
@@ -44,6 +51,11 @@ export default function Navbar() {
                 aria-current={active ? "page" : undefined}
               >
                 {link.label}
+                {link.href === "/cart" && cartCount > 0 && (
+                  <span className="ml-1.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-tomato px-1.5 text-xs font-bold text-white">
+                    {cartCount}
+                  </span>
+                )}
               </Link>
             );
           })}
