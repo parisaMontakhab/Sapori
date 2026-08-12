@@ -9,6 +9,8 @@ export interface CartItem {
 
 const CART_KEY = "sapori_cart";
 const EMPTY_CART: CartItem[] = [];
+const OBJECT_ID_PATTERN = /^[a-f\d]{24}$/i;
+const LEGACY_MOCK_ID_PATTERN = /^prod-\d+$/;
 
 type CartListener = () => void;
 const listeners = new Set<CartListener>();
@@ -116,4 +118,28 @@ export function clearCart(): void {
 
 export function getCartTotal(items: CartItem[]): number {
   return items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+}
+
+export function isValidCartProductId(productId: string): boolean {
+  return OBJECT_ID_PATTERN.test(productId);
+}
+
+export function getStaleCartItems(items: CartItem[]): CartItem[] {
+  return items.filter(
+    (item) =>
+      LEGACY_MOCK_ID_PATTERN.test(item.productId) ||
+      !OBJECT_ID_PATTERN.test(item.productId),
+  );
+}
+
+export function removeStaleCartItems(): number {
+  const cart = getCart();
+  const valid = cart.filter((item) => isValidCartProductId(item.productId));
+  const removed = cart.length - valid.length;
+
+  if (removed > 0) {
+    saveCart(valid);
+  }
+
+  return removed;
 }

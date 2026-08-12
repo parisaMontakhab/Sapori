@@ -2,28 +2,38 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { login } from "@/services/authService";
-import { saveLoggedInUser } from "@/store/auth";
+import { useLogin } from "@/hooks/useAuth";
+
+function getErrorMessage(error: unknown): string {
+  if (error instanceof Error && error.message) {
+    return error.message;
+  }
+
+  return "Invalid email or password";
+}
 
 export default function LoginForm() {
   const router = useRouter();
+  const loginMutation = useLogin();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
 
-  async function handleSubmit(e: React.FormEvent) {
+  function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setError("");
 
-    const user = await login(email, password);
-    if (!user) {
-      setError("Invalid email or password");
-      return;
-    }
-
-    saveLoggedInUser(user);
-    router.push("/profile");
+    loginMutation.mutate(
+      { email, password },
+      {
+        onSuccess: () => {
+          router.push("/profile");
+        },
+      },
+    );
   }
+
+  const error = loginMutation.isError
+    ? getErrorMessage(loginMutation.error)
+    : "";
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-5">
@@ -58,13 +68,11 @@ export default function LoginForm() {
       )}
       <button
         type="submit"
-        className="min-h-11 w-full rounded-full bg-tomato py-3 font-semibold text-white shadow-md transition-colors hover:bg-tomato-dark"
+        disabled={loginMutation.isPending}
+        className="min-h-11 w-full rounded-full bg-tomato py-3 font-semibold text-white shadow-md transition-colors hover:bg-tomato-dark disabled:opacity-60"
       >
         Login
       </button>
-      <p className="text-center text-sm text-foreground/50">
-        Demo account: marco@example.com / password123
-      </p>
     </form>
   );
 }

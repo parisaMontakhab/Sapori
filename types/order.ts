@@ -5,10 +5,16 @@ export interface OrderItem {
   quantity: number;
 }
 
-export type OrderStatus = "pending" | "delivered";
+export type OrderStatus =
+  | "pending"
+  | "confirmed"
+  | "preparing"
+  | "delivered"
+  | "cancelled";
 
 export interface Order {
   id: string;
+  orderNumber?: string;
   userId: string;
   items: OrderItem[];
   total: number;

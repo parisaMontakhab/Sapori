@@ -2,21 +2,24 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState, useSyncExternalStore } from "react";
-import { createOrder } from "@/services/orderService";
-import { getProducts } from "@/services/productService";
+import { useRouter } from "next/navigation";
+import { useState, useSyncExternalStore } from "react";
 import LoginRequiredModal from "@/components/LoginRequiredModal";
 import QuantityStepper from "@/components/QuantityStepper";
+import { useProducts } from "@/hooks/useProducts";
+import { useCreateOrder } from "@/hooks/useOrders";
 import {
   clearCart,
   getCartSnapshot,
   getCartTotal,
   getServerCartSnapshot,
+  getStaleCartItems,
+  isValidCartProductId,
   removeFromCart,
+  removeStaleCartItems,
   subscribeToCart,
 } from "@/store/cart";
 import { getLoggedInUser } from "@/store/auth";
-import type { Product } from "@/types";
 
 const DELIVERY_FEE = 3.5;
 const FREE_DELIVERY_MIN = 25;
@@ -25,26 +28,32 @@ function formatEuro(amount: number): string {
   return Number.isInteger(amount) ? `€${amount}` : `€${amount.toFixed(2)}`;
 }
 
+function getErrorMessage(error: unknown): string {
+  if (error instanceof Error && error.message) {
+    return error.message;
+  }
+
+  return "Failed to place order.";
+}
+
 export default function CartPage() {
+  const router = useRouter();
   const items = useSyncExternalStore(
     subscribeToCart,
     getCartSnapshot,
     getServerCartSnapshot,
   );
-  const [products, setProducts] = useState<Product[]>([]);
+  const { data: products = [] } = useProducts();
+  const createOrderMutation = useCreateOrder();
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState<"success" | "error">("success");
-
-  useEffect(() => {
-    getProducts().then(setProducts);
-  }, []);
 
   function handleRemove(productId: string) {
     removeFromCart(productId);
   }
 
-  async function handleCheckout() {
+  function handleCheckout() {
     const user = getLoggedInUser();
     if (!user) {
       setShowLoginPrompt(true);
@@ -57,10 +66,45 @@ export default function CartPage() {
       return;
     }
 
-    await createOrder(user.id, items);
-    clearCart();
-    setMessageType("success");
-    setMessage("Order placed successfully! Buon appetito! 🍝");
+    const staleItems = getStaleCartItems(items);
+    if (staleItems.length > 0) {
+      removeStaleCartItems();
+      setMessageType("error");
+      setMessage(
+        staleItems.length === items.length
+          ? "Your cart contains outdated items from a previous version. They have been removed — please add dishes again from the menu."
+          : "Some outdated cart items were removed. Please review your cart before placing the order.",
+      );
+      return;
+    }
+
+    const validItems = items.filter((item) => isValidCartProductId(item.productId));
+    if (validItems.length === 0) {
+      setMessageType("error");
+      setMessage("Your cart is empty.");
+      return;
+    }
+
+    setMessage("");
+
+    createOrderMutation.mutate(
+      validItems.map((item) => ({
+        productId: item.productId,
+        name: item.name,
+        price: item.price,
+        quantity: item.quantity,
+      })),
+      {
+        onSuccess: () => {
+          clearCart();
+          router.push("/profile");
+        },
+        onError: (error) => {
+          setMessageType("error");
+          setMessage(getErrorMessage(error));
+        },
+      },
+    );
   }
 
   const subtotal = getCartTotal(items);
@@ -219,7 +263,8 @@ export default function CartPage() {
               <button
                 type="button"
                 onClick={handleCheckout}
-                className="mt-6 min-h-11 w-full rounded-full bg-orange py-3.5 font-bold text-white shadow-md transition-colors hover:bg-orange-light"
+                disabled={createOrderMutation.isPending}
+                className="mt-6 min-h-11 w-full rounded-full bg-orange py-3.5 font-bold text-white shadow-md transition-colors hover:bg-orange-light disabled:opacity-60"
               >
                 Place Order
               </button>

@@ -1,12 +1,40 @@
-import { products } from "@/data/products";
+import { ApiError, apiFetch } from "@/lib/api";
+import { mapProduct, type BackendProduct } from "@/lib/mappers";
 import type { Product } from "@/types";
 
-// TODO: Replace with GET /api/products
-export async function getProducts(): Promise<Product[]> {
-  return products;
+interface ProductsListResponse {
+  success: boolean;
+  data: {
+    products: BackendProduct[];
+  };
 }
 
-// TODO: Replace with GET /api/products/:id
+interface ProductDetailResponse {
+  status: string;
+  data: {
+    data: BackendProduct;
+  };
+}
+
+const PRODUCTS_FETCH_LIMIT = 100;
+
+export async function getProducts(): Promise<Product[]> {
+  const response = await apiFetch<ProductsListResponse>(
+    `/products?limit=${PRODUCTS_FETCH_LIMIT}`,
+  );
+
+  return response.data.products.map(mapProduct);
+}
+
 export async function getProductById(id: string): Promise<Product | null> {
-  return products.find((product) => product.id === id) ?? null;
+  try {
+    const response = await apiFetch<ProductDetailResponse>(`/products/${id}`);
+    return mapProduct(response.data.data);
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 404) {
+      return null;
+    }
+
+    throw error;
+  }
 }

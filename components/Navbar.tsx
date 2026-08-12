@@ -3,7 +3,9 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState, useSyncExternalStore } from "react";
+import { useCurrentUser } from "@/hooks/useAuth";
 import { getCartItemCount, subscribeToCart } from "@/store/cart";
+import { getLoggedInUser } from "@/store/auth";
 
 const links = [
   { href: "/", label: "Home" },
@@ -63,16 +65,20 @@ function NavLink({
 
 export default function Navbar() {
   const pathname = usePathname();
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [mobileMenu, setMobileMenu] = useState({
+    isOpen: false,
+    atPathname: pathname,
+  });
+  const { data: currentUser } = useCurrentUser();
+  const isLoggedIn = Boolean(currentUser ?? getLoggedInUser());
   const cartCount = useSyncExternalStore(
     subscribeToCart,
     getCartItemCount,
     () => 0,
   );
 
-  useEffect(() => {
-    setMenuOpen(false);
-  }, [pathname]);
+  const menuOpen =
+    mobileMenu.isOpen && mobileMenu.atPathname === pathname;
 
   useEffect(() => {
     document.body.style.overflow = menuOpen ? "hidden" : "";
@@ -82,7 +88,15 @@ export default function Navbar() {
   }, [menuOpen]);
 
   function closeMenu() {
-    setMenuOpen(false);
+    setMobileMenu({ isOpen: false, atPathname: pathname });
+  }
+
+  function toggleMenu() {
+    setMobileMenu((current) =>
+      current.isOpen && current.atPathname === pathname
+        ? { isOpen: false, atPathname: pathname }
+        : { isOpen: true, atPathname: pathname },
+    );
   }
 
   return (
@@ -106,19 +120,21 @@ export default function Navbar() {
               cartCount={cartCount}
             />
           ))}
-          <Link
-            href="/login"
-            className="ml-1 min-h-11 rounded-full bg-tomato px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-tomato-dark sm:ml-2"
-          >
-            Login
-          </Link>
+          {!isLoggedIn && (
+            <Link
+              href="/login"
+              className="ml-1 min-h-11 rounded-full bg-tomato px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-tomato-dark sm:ml-2"
+            >
+              Login
+            </Link>
+          )}
         </div>
 
         {/* Mobile menu toggle */}
         <button
           type="button"
           className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-xl text-foreground transition-colors hover:bg-cream md:hidden"
-          onClick={() => setMenuOpen((open) => !open)}
+          onClick={toggleMenu}
           aria-expanded={menuOpen}
           aria-controls="mobile-nav"
           aria-label={menuOpen ? "Close menu" : "Open menu"}
@@ -169,13 +185,15 @@ export default function Navbar() {
                 mobile
               />
             ))}
-            <Link
-              href="/login"
-              onClick={closeMenu}
-              className="mt-2 flex min-h-11 items-center justify-center rounded-full bg-tomato px-4 py-2.5 text-base font-semibold text-white shadow-sm transition-colors hover:bg-tomato-dark"
-            >
-              Login
-            </Link>
+            {!isLoggedIn && (
+              <Link
+                href="/login"
+                onClick={closeMenu}
+                className="mt-2 flex min-h-11 items-center justify-center rounded-full bg-tomato px-4 py-2.5 text-base font-semibold text-white shadow-sm transition-colors hover:bg-tomato-dark"
+              >
+                Login
+              </Link>
+            )}
           </div>
         </div>
       )}

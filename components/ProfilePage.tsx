@@ -2,12 +2,14 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import { getOrdersByUser } from "@/services/orderService";
-import { getProducts } from "@/services/productService";
-import type { Order, Product, User } from "@/types";
-import { getLoggedInUser, logout } from "@/store/auth";
+import { useCurrentUser } from "@/hooks/useAuth";
+import { useMyOrders } from "@/hooks/useOrders";
+import { useProducts } from "@/hooks/useProducts";
+import { queryKeys } from "@/lib/queryKeys";
+import type { Order, Product } from "@/types";
+import { getAuthToken, getLoggedInUser, logout } from "@/store/auth";
 
 function getItemCount(order: Order): number {
   return order.items.reduce((sum, item) => sum + item.quantity, 0);
@@ -46,23 +48,31 @@ function getFavoriteCategory(orders: Order[], products: Product[]): string {
   return topCategory?.[0] ?? "—";
 }
 
+function getErrorMessage(error: unknown): string {
+  if (error instanceof Error && error.message) {
+    return error.message;
+  }
+
+  return "Something went wrong loading your orders.";
+}
+
 export default function ProfilePage() {
   const router = useRouter();
-  const [user, setUser] = useState<User | null>(null);
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [products, setProducts] = useState<Product[]>([]);
-
-  useEffect(() => {
-    const loggedIn = getLoggedInUser();
-    if (!loggedIn) return;
-
-    setUser(loggedIn);
-    getOrdersByUser(loggedIn.id).then(setOrders);
-    getProducts().then(setProducts);
-  }, []);
+  const queryClient = useQueryClient();
+  const { data: currentUser } = useCurrentUser();
+  const user = currentUser ?? getLoggedInUser();
+  const {
+    data: orders = [],
+    isPending: isOrdersPending,
+    isError: isOrdersError,
+    error: ordersError,
+  } = useMyOrders();
+  const { data: products = [] } = useProducts();
 
   function handleLogout() {
     logout();
+    queryClient.removeQueries({ queryKey: queryKeys.auth.me });
+    queryClient.removeQueries({ queryKey: queryKeys.orders.all });
     router.push("/login");
   }
 
@@ -70,7 +80,7 @@ export default function ProfilePage() {
     return products.find((product) => product.id === productId)?.imageUrl;
   }
 
-  if (!user) {
+  if (!getAuthToken() && !user) {
     return (
       <div className="mx-auto max-w-md rounded-2xl bg-white p-8 text-center shadow-md sm:p-12">
         <p className="text-5xl">👋</p>
@@ -84,6 +94,14 @@ export default function ProfilePage() {
         >
           Go to Login
         </Link>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="mx-auto max-w-md rounded-2xl bg-white p-8 text-center shadow-md sm:p-12">
+        <p className="text-sm text-foreground/60">Loading profile...</p>
       </div>
     );
   }
@@ -135,7 +153,7 @@ export default function ProfilePage() {
           </p>
           <p className="mt-3 text-sm text-foreground/60">Total Orders</p>
           <p className="mt-1 text-2xl font-bold text-foreground">
-            {orders.length}
+            {isOrdersPending ? "—" : orders.length}
           </p>
         </div>
         <div className="rounded-2xl bg-white p-5 shadow-md">
@@ -143,7 +161,9 @@ export default function ProfilePage() {
             💰
           </p>
           <p className="mt-3 text-sm text-foreground/60">Total Spent</p>
-          <p className="mt-1 text-2xl font-bold text-tomato">€{totalSpent}</p>
+          <p className="mt-1 text-2xl font-bold text-tomato">
+            {isOrdersPending ? "—" : `€${totalSpent}`}
+          </p>
         </div>
         <div className="rounded-2xl bg-white p-5 shadow-md">
           <p className="text-2xl" role="img" aria-hidden>
@@ -151,7 +171,7 @@ export default function ProfilePage() {
           </p>
           <p className="mt-3 text-sm text-foreground/60">Favorite Category</p>
           <p className="mt-1 text-2xl font-bold text-foreground">
-            {favoriteCategory}
+            {isOrdersPending ? "—" : favoriteCategory}
           </p>
         </div>
       </div>
@@ -159,7 +179,13 @@ export default function ProfilePage() {
       <div>
         <h2 className="mb-4 text-xl font-bold text-foreground">Your Orders</h2>
 
-        {orders.length === 0 ? (
+        {isOrdersPending ? (
+          <p className="text-sm text-foreground/60">Loading orders...</p>
+        ) : isOrdersError ? (
+          <p className="rounded-lg bg-tomato/10 px-4 py-2 text-sm text-tomato">
+            {getErrorMessage(ordersError)}
+          </p>
+        ) : orders.length === 0 ? (
           <div className="rounded-2xl bg-white p-10 text-center shadow-md sm:p-12">
             <p className="text-5xl">📦</p>
             <p className="mt-4 text-lg font-semibold text-foreground">
@@ -206,7 +232,7 @@ export default function ProfilePage() {
                     <div className="min-w-0">
                       <div className="flex flex-wrap items-center gap-2">
                         <p className="font-bold text-foreground">
-                          Order #{order.id}
+                          Order #{order.orderNumber ?? order.id}
                         </p>
                         <span
                           className={`rounded-full px-3 py-1 text-xs font-semibold ${getStatusBadgeClasses(order.status)}`}

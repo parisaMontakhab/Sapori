@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
+import QueryProvider from "@/components/providers/QueryProvider";
 import "./globals.css";
 
 const geist = Geist({
@@ -23,11 +24,13 @@ export default function RootLayout({
       <body
         className={`${geist.className} flex min-h-screen flex-col overflow-x-hidden bg-cream text-foreground`}
       >
-        <Navbar />
-        <main className="mx-auto w-full max-w-6xl flex-1 px-3 py-6 sm:px-6 sm:py-10">
-          {children}
-        </main>
-        <Footer />
+        <QueryProvider>
+          <Navbar />
+          <main className="mx-auto w-full max-w-6xl flex-1 px-3 py-6 sm:px-6 sm:py-10">
+            {children}
+          </main>
+          <Footer />
+        </QueryProvider>
       </body>
     </html>
   );

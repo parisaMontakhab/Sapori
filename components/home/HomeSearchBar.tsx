@@ -7,18 +7,19 @@ export default function HomeSearchBar() {
   const router = useRouter();
   const [query, setQuery] = useState("");
 
-  function handleSubmit(e: React.FormEvent) {
+  function handleSubmit(e: React.SubmitEvent<HTMLFormElement>) {
     e.preventDefault();
     const trimmed = query.trim();
     if (trimmed) {
       router.push(`/menu?search=${encodeURIComponent(trimmed)}`);
-    } else {
-      router.push("/menu");
     }
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex w-full max-w-xl flex-col gap-3 sm:flex-row">
+    <form
+      onSubmit={handleSubmit}
+      className="flex w-full max-w-xl flex-col gap-3 sm:flex-row"
+    >
       <input
         type="search"
         value={query}

@@ -2,29 +2,39 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { register } from "@/services/authService";
-import { saveLoggedInUser } from "@/store/auth";
+import { useRegister } from "@/hooks/useAuth";
+
+function getErrorMessage(error: unknown): string {
+  if (error instanceof Error && error.message) {
+    return error.message;
+  }
+
+  return "Email already in use";
+}
 
 export default function RegisterForm() {
   const router = useRouter();
+  const registerMutation = useRegister();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
 
-  async function handleSubmit(e: React.FormEvent) {
+  function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setError("");
 
-    const user = await register(name, email, password);
-    if (!user) {
-      setError("Email already in use");
-      return;
-    }
-
-    saveLoggedInUser(user);
-    router.push("/profile");
+    registerMutation.mutate(
+      { name, email, password },
+      {
+        onSuccess: () => {
+          router.push("/profile");
+        },
+      },
+    );
   }
+
+  const error = registerMutation.isError
+    ? getErrorMessage(registerMutation.error)
+    : "";
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-5">
@@ -71,7 +81,8 @@ export default function RegisterForm() {
       )}
       <button
         type="submit"
-        className="min-h-11 w-full rounded-full bg-basil py-3 font-semibold text-white shadow-md transition-colors hover:bg-basil-light"
+        disabled={registerMutation.isPending}
+        className="min-h-11 w-full rounded-full bg-basil py-3 font-semibold text-white shadow-md transition-colors hover:bg-basil-light disabled:opacity-60"
       >
         Create Account
       </button>
