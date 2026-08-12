@@ -15,24 +15,52 @@ const nextConfig: NextConfig = {
 
   images: {
     remotePatterns: [
+      // Unsplash
       {
         protocol: "https",
         hostname: "images.unsplash.com",
         pathname: "/**",
       },
+
+      // Carbonara
       {
         protocol: "https",
         hostname: "media.velocidadcuchara.com",
         pathname: "/**",
       },
+
+      // Linguine alle Vongole
       {
         protocol: "https",
         hostname: "slicelife.imgix.net",
         pathname: "/**",
       },
+
+      // Ravioli
       {
         protocol: "https",
         hostname: "snapcalorie-webflow-website.s3.us-east-2.amazonaws.com",
+        pathname: "/**",
+      },
+
+      // Insalata Caprese
+      {
+        protocol: "https",
+        hostname: "www.mojegotowanie.pl",
+        pathname: "/**",
+      },
+
+      // Panzanella Toscana
+      {
+        protocol: "https",
+        hostname: "www.whatscooking.nl",
+        pathname: "/**",
+      },
+
+      // Insalata Tricolore
+      {
+        protocol: "https",
+        hostname: "placeralplato.com",
         pathname: "/**",
       },
     ],
