@@ -2,15 +2,9 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { toast } from "sonner";
 import { useRegister } from "@/hooks/useAuth";
-
-function getErrorMessage(error: unknown): string {
-  if (error instanceof Error && error.message) {
-    return error.message;
-  }
-
-  return "Email already in use";
-}
+import { getErrorMessage } from "@/lib/errors";
 
 export default function RegisterForm() {
   const router = useRouter();
@@ -26,14 +20,18 @@ export default function RegisterForm() {
       { name, email, password },
       {
         onSuccess: () => {
+          toast.success("Account created successfully!");
           router.push("/profile");
+        },
+        onError: (error) => {
+          toast.error(getErrorMessage(error, "Email already in use"));
         },
       },
     );
   }
 
   const error = registerMutation.isError
-    ? getErrorMessage(registerMutation.error)
+    ? getErrorMessage(registerMutation.error, "Email already in use")
     : "";
 
   return (

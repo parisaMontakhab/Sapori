@@ -1,4 +1,5 @@
 import type { Order, OrderItem, OrderStatus, Product, User } from "@/types";
+import { resolveUserPhotoUrl } from "@/lib/userPhoto";
 
 interface MongoDocument {
   _id: string;
@@ -16,6 +17,7 @@ export interface BackendProduct extends MongoDocument {
 export interface BackendUser extends MongoDocument {
   name: string;
   email: string;
+  photo?: string;
 }
 
 interface BackendOrderProductItem {
@@ -53,6 +55,7 @@ export function mapUser(user: BackendUser): User {
     id: toId(user),
     name: user.name,
     email: user.email,
+    photoUrl: resolveUserPhotoUrl(user.photo),
   };
 }
 

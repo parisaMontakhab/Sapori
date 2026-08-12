@@ -68,6 +68,11 @@ const nextConfig: NextConfig = {
         hostname: "upload.wikimedia.org",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "sapori-backend.onrender.com",
+        pathname: "/img/**",
+      },
     ],
   },
 };

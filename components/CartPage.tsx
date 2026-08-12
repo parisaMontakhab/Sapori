@@ -4,10 +4,12 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useSyncExternalStore } from "react";
+import { toast } from "sonner";
 import LoginRequiredModal from "@/components/LoginRequiredModal";
 import QuantityStepper from "@/components/QuantityStepper";
 import { useProducts } from "@/hooks/useProducts";
 import { useCreateOrder } from "@/hooks/useOrders";
+import { getErrorMessage } from "@/lib/errors";
 import {
   clearCart,
   getCartSnapshot,
@@ -26,14 +28,6 @@ const FREE_DELIVERY_MIN = 25;
 
 function formatEuro(amount: number): string {
   return Number.isInteger(amount) ? `€${amount}` : `€${amount.toFixed(2)}`;
-}
-
-function getErrorMessage(error: unknown): string {
-  if (error instanceof Error && error.message) {
-    return error.message;
-  }
-
-  return "Failed to place order.";
 }
 
 export default function CartPage() {
@@ -69,12 +63,13 @@ export default function CartPage() {
     const staleItems = getStaleCartItems(items);
     if (staleItems.length > 0) {
       removeStaleCartItems();
-      setMessageType("error");
-      setMessage(
+      const staleMessage =
         staleItems.length === items.length
           ? "Your cart contains outdated items from a previous version. They have been removed — please add dishes again from the menu."
-          : "Some outdated cart items were removed. Please review your cart before placing the order.",
-      );
+          : "Some outdated cart items were removed. Please review your cart before placing the order.";
+      setMessageType("error");
+      setMessage(staleMessage);
+      toast.warning(staleMessage);
       return;
     }
 
@@ -97,11 +92,14 @@ export default function CartPage() {
       {
         onSuccess: () => {
           clearCart();
+          toast.success("Order placed successfully!");
           router.push("/profile");
         },
         onError: (error) => {
+          const message = getErrorMessage(error, "Failed to place order.");
           setMessageType("error");
-          setMessage(getErrorMessage(error));
+          setMessage(message);
+          toast.error(message);
         },
       },
     );

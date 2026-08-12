@@ -2,15 +2,9 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { toast } from "sonner";
 import { useLogin } from "@/hooks/useAuth";
-
-function getErrorMessage(error: unknown): string {
-  if (error instanceof Error && error.message) {
-    return error.message;
-  }
-
-  return "Invalid email or password";
-}
+import { getErrorMessage } from "@/lib/errors";
 
 export default function LoginForm() {
   const router = useRouter();
@@ -25,14 +19,18 @@ export default function LoginForm() {
       { email, password },
       {
         onSuccess: () => {
+          toast.success("Welcome back!");
           router.push("/profile");
+        },
+        onError: (error) => {
+          toast.error(getErrorMessage(error, "Invalid email or password"));
         },
       },
     );
   }
 
   const error = loginMutation.isError
-    ? getErrorMessage(loginMutation.error)
+    ? getErrorMessage(loginMutation.error, "Invalid email or password")
     : "";
 
   return (

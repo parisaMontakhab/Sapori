@@ -4,11 +4,14 @@ import Image from "next/image";
 import Link from "next/link";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 import { useCurrentUser } from "@/hooks/useAuth";
 import { useMyOrders } from "@/hooks/useOrders";
 import { useProducts } from "@/hooks/useProducts";
+import { getErrorMessage } from "@/lib/errors";
 import { queryKeys } from "@/lib/queryKeys";
-import type { Order, Product } from "@/types";
+import type { Order, Product, User } from "@/types";
 import { getAuthToken, getLoggedInUser, logout } from "@/store/auth";
 
 function getItemCount(order: Order): number {
@@ -48,12 +51,30 @@ function getFavoriteCategory(orders: Order[], products: Product[]): string {
   return topCategory?.[0] ?? "—";
 }
 
-function getErrorMessage(error: unknown): string {
-  if (error instanceof Error && error.message) {
-    return error.message;
+function ProfileAvatar({ user }: { user: User }) {
+  const [imageFailed, setImageFailed] = useState(false);
+  const showPhoto = Boolean(user.photoUrl) && !imageFailed;
+
+  if (showPhoto && user.photoUrl) {
+    return (
+      <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-full shadow-md sm:h-20 sm:w-20">
+        <Image
+          src={user.photoUrl}
+          alt={user.name}
+          fill
+          sizes="80px"
+          className="object-cover"
+          onError={() => setImageFailed(true)}
+        />
+      </div>
+    );
   }
 
-  return "Something went wrong loading your orders.";
+  return (
+    <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-tomato to-orange text-2xl font-bold text-white shadow-md sm:h-20 sm:w-20 sm:text-3xl">
+      {user.name.charAt(0).toUpperCase()}
+    </div>
+  );
 }
 
 export default function ProfilePage() {
@@ -68,11 +89,26 @@ export default function ProfilePage() {
     error: ordersError,
   } = useMyOrders();
   const { data: products = [] } = useProducts();
+  const ordersErrorToasted = useRef(false);
+
+  useEffect(() => {
+    if (isOrdersError && ordersError && !ordersErrorToasted.current) {
+      ordersErrorToasted.current = true;
+      toast.error(
+        getErrorMessage(ordersError, "Something went wrong loading your orders."),
+      );
+    }
+
+    if (!isOrdersError) {
+      ordersErrorToasted.current = false;
+    }
+  }, [isOrdersError, ordersError]);
 
   function handleLogout() {
     logout();
     queryClient.removeQueries({ queryKey: queryKeys.auth.me });
     queryClient.removeQueries({ queryKey: queryKeys.orders.all });
+    toast.success("Logged out successfully.");
     router.push("/login");
   }
 
@@ -122,9 +158,7 @@ export default function ProfilePage() {
         <div className="bg-gradient-to-r from-tomato/10 via-orange/10 to-cream-dark px-4 py-5 sm:px-8">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between sm:gap-5">
             <div className="flex min-w-0 items-center gap-4 sm:gap-5">
-              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-tomato to-orange text-2xl font-bold text-white shadow-md sm:h-20 sm:w-20 sm:text-3xl">
-                {user.name.charAt(0).toUpperCase()}
-              </div>
+              <ProfileAvatar user={user} />
               <div className="min-w-0">
                 <p className="truncate text-xl font-bold text-foreground sm:text-2xl">
                   {user.name}
@@ -183,7 +217,7 @@ export default function ProfilePage() {
           <p className="text-sm text-foreground/60">Loading orders...</p>
         ) : isOrdersError ? (
           <p className="rounded-lg bg-tomato/10 px-4 py-2 text-sm text-tomato">
-            {getErrorMessage(ordersError)}
+            {getErrorMessage(ordersError, "Something went wrong loading your orders.")}
           </p>
         ) : orders.length === 0 ? (
           <div className="rounded-2xl bg-white p-10 text-center shadow-md sm:p-12">
