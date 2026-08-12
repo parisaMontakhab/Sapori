@@ -12,7 +12,7 @@ export default function PaymentSuccessContent() {
   const searchParams = useSearchParams();
   const queryClient = useQueryClient();
   const handledRef = useRef(false);
-  const sessionId = searchParams.get("session_id");
+  const orderNumber = searchParams.get("order_number");
 
   useEffect(() => {
     if (handledRef.current) return;
@@ -32,9 +32,9 @@ export default function PaymentSuccessContent() {
       <p className="mt-2 text-foreground/60">
         Your order has been confirmed.
       </p>
-      {sessionId && (
-        <p className="mt-4 text-xs text-foreground/40">
-          Reference: {sessionId}
+      {orderNumber && (
+        <p className="mt-4 max-w-full break-all px-1 text-sm font-medium text-foreground/60 sm:text-base">
+          Order #{orderNumber}
         </p>
       )}
       <div className="mt-8 flex flex-col gap-3">
