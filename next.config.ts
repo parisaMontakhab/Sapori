@@ -12,11 +12,27 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+
   images: {
     remotePatterns: [
       {
         protocol: "https",
         hostname: "images.unsplash.com",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "media.velocidadcuchara.com",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "slicelife.imgix.net",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "snapcalorie-webflow-website.s3.us-east-2.amazonaws.com",
         pathname: "/**",
       },
     ],
