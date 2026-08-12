@@ -63,6 +63,11 @@ const nextConfig: NextConfig = {
         hostname: "placeralplato.com",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "upload.wikimedia.org",
+        pathname: "/**",
+      },
     ],
   },
 };
