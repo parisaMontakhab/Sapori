@@ -1,3 +1,3 @@
 export type { User } from "./user";
 export type { Product } from "./product";
-export type { Order, OrderItem, OrderStatus } from "./order";
+export type { Order, OrderItem, OrderStatus, PaymentStatus } from "./order";

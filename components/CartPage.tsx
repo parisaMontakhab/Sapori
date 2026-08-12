@@ -2,16 +2,16 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState, useSyncExternalStore } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { toast } from "sonner";
 import LoginRequiredModal from "@/components/LoginRequiredModal";
 import QuantityStepper from "@/components/QuantityStepper";
 import { useProducts } from "@/hooks/useProducts";
 import { useCreateOrder } from "@/hooks/useOrders";
+import { useCheckoutSession } from "@/hooks/usePayment";
 import { getErrorMessage } from "@/lib/errors";
 import {
-  clearCart,
   getCartSnapshot,
   getCartTotal,
   getServerCartSnapshot,
@@ -32,6 +32,7 @@ function formatEuro(amount: number): string {
 
 export default function CartPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const items = useSyncExternalStore(
     subscribeToCart,
     getCartSnapshot,
@@ -39,15 +40,29 @@ export default function CartPage() {
   );
   const { data: products = [] } = useProducts();
   const createOrderMutation = useCreateOrder();
+  const checkoutSessionMutation = useCheckoutSession();
+  const cancelToastShownRef = useRef(false);
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState<"success" | "error">("success");
+
+  const isCheckoutPending =
+    createOrderMutation.isPending || checkoutSessionMutation.isPending;
+
+  useEffect(() => {
+    if (searchParams.get("payment") !== "cancelled") return;
+    if (cancelToastShownRef.current) return;
+    cancelToastShownRef.current = true;
+
+    toast("Payment cancelled. Your cart has been saved.");
+    router.replace("/cart", { scroll: false });
+  }, [searchParams, router]);
 
   function handleRemove(productId: string) {
     removeFromCart(productId);
   }
 
-  function handleCheckout() {
+  async function handleCheckout() {
     const user = getLoggedInUser();
     if (!user) {
       setShowLoginPrompt(true);
@@ -82,27 +97,24 @@ export default function CartPage() {
 
     setMessage("");
 
-    createOrderMutation.mutate(
-      validItems.map((item) => ({
-        productId: item.productId,
-        name: item.name,
-        price: item.price,
-        quantity: item.quantity,
-      })),
-      {
-        onSuccess: () => {
-          clearCart();
-          toast.success("Order placed successfully!");
-          router.push("/profile");
-        },
-        onError: (error) => {
-          const message = getErrorMessage(error, "Failed to place order.");
-          setMessageType("error");
-          setMessage(message);
-          toast.error(message);
-        },
-      },
-    );
+    try {
+      const order = await createOrderMutation.mutateAsync(
+        validItems.map((item) => ({
+          productId: item.productId,
+          name: item.name,
+          price: item.price,
+          quantity: item.quantity,
+        })),
+      );
+
+      const session = await checkoutSessionMutation.mutateAsync(order.id);
+      window.location.href = session.checkoutUrl;
+    } catch (error) {
+      const errorMessage = getErrorMessage(error, "Failed to start checkout.");
+      setMessageType("error");
+      setMessage(errorMessage);
+      toast.error(errorMessage);
+    }
   }
 
   const subtotal = getCartTotal(items);
@@ -261,10 +273,10 @@ export default function CartPage() {
               <button
                 type="button"
                 onClick={handleCheckout}
-                disabled={createOrderMutation.isPending}
+                disabled={isCheckoutPending}
                 className="mt-6 min-h-11 w-full rounded-full bg-orange py-3.5 font-bold text-white shadow-md transition-colors hover:bg-orange-light disabled:opacity-60"
               >
-                Place Order
+                {isCheckoutPending ? "Processing..." : "Place Order"}
               </button>
             </div>
           </aside>

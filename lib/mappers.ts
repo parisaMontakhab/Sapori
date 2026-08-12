@@ -1,4 +1,11 @@
-import type { Order, OrderItem, OrderStatus, Product, User } from "@/types";
+import type {
+  Order,
+  OrderItem,
+  OrderStatus,
+  PaymentStatus,
+  Product,
+  User,
+} from "@/types";
 import { resolveUserPhotoUrl } from "@/lib/userPhoto";
 
 interface MongoDocument {
@@ -30,6 +37,7 @@ export interface BackendOrder extends MongoDocument {
   products: BackendOrderProductItem[];
   totalPrice: number;
   status: OrderStatus;
+  paymentStatus?: PaymentStatus;
   orderNumber?: string;
   createdAt: string;
 }
@@ -87,6 +95,7 @@ export function mapOrder(order: BackendOrder): Order {
     items: order.products.map(mapOrderItem),
     total: order.totalPrice,
     status: order.status,
+    paymentStatus: order.paymentStatus,
     createdAt: order.createdAt,
   };
 }
