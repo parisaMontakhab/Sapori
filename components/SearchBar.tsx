@@ -3,18 +3,31 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-export default function SearchBar({ defaultValue = "" }: { defaultValue?: string }) {
+export default function SearchBar({
+  defaultValue = "",
+  category,
+}: {
+  defaultValue?: string;
+  category?: string;
+}) {
   const router = useRouter();
   const [query, setQuery] = useState(defaultValue);
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     const trimmed = query.trim();
+    const params = new URLSearchParams();
+
     if (trimmed) {
-      router.push(`/menu?search=${encodeURIComponent(trimmed)}`);
-    } else {
-      router.push("/menu");
+      params.set("search", trimmed);
     }
+
+    if (category) {
+      params.set("category", category);
+    }
+
+    const queryString = params.toString();
+    router.push(queryString ? `/menu?${queryString}` : "/menu");
   }
 
   return (
