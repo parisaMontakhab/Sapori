@@ -6,6 +6,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
+import ChangePasswordForm from "@/components/ChangePasswordForm";
 import { useCurrentUser, useUpdateProfile } from "@/hooks/useAuth";
 import { useMyOrders } from "@/hooks/useOrders";
 import { useProducts } from "@/hooks/useProducts";
@@ -145,6 +146,7 @@ export default function ProfilePage() {
   const updateProfileMutation = useUpdateProfile();
   const user = currentUser ?? getLoggedInUser();
   const [isEditing, setIsEditing] = useState(false);
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [photoFile, setPhotoFile] = useState<File | null>(null);
@@ -499,6 +501,27 @@ export default function ProfilePage() {
             {isOrdersPending ? "—" : favoriteCategory}
           </p>
         </div>
+      </div>
+
+      <div className="rounded-2xl bg-white p-5 shadow-md sm:p-6">
+        <h2 className="text-lg font-bold text-foreground">Security</h2>
+        <p className="mt-1 text-sm text-foreground/60">
+          Update your account password.
+        </p>
+
+        {isChangingPassword ? (
+          <div className="mt-5">
+            <ChangePasswordForm onCancel={() => setIsChangingPassword(false)} />
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setIsChangingPassword(true)}
+            className="mt-5 min-h-11 rounded-full border border-basil/30 bg-white px-6 py-2.5 text-sm font-semibold text-basil transition-colors hover:bg-basil/5"
+          >
+            Change Password
+          </button>
+        )}
       </div>
 
       <div>

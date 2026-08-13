@@ -3,10 +3,15 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/queryKeys";
 import {
+  forgotPassword,
   getUserById,
   login,
   register,
+  resetPassword,
+  updatePassword,
   updateProfile,
+  type ResetPasswordInput,
+  type UpdatePasswordInput,
   type UpdateProfileInput,
 } from "@/services/authService";
 import { getAuthToken } from "@/store/auth";
@@ -63,6 +68,36 @@ export function useUpdateProfile() {
     mutationFn: (input: UpdateProfileInput) => updateProfile(input),
     onSuccess: (user) => {
       queryClient.setQueryData(queryKeys.auth.me, user);
+    },
+  });
+}
+
+export function useForgotPassword() {
+  return useMutation({
+    mutationFn: (email: string) => forgotPassword(email),
+  });
+}
+
+export function useResetPassword(token: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (input: ResetPasswordInput) => resetPassword(token, input),
+    onSuccess: (user) => {
+      queryClient.setQueryData(queryKeys.auth.me, user);
+      queryClient.invalidateQueries({ queryKey: queryKeys.auth.me });
+    },
+  });
+}
+
+export function useUpdatePassword() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (input: UpdatePasswordInput) => updatePassword(input),
+    onSuccess: (user) => {
+      queryClient.setQueryData(queryKeys.auth.me, user);
+      queryClient.invalidateQueries({ queryKey: queryKeys.auth.me });
     },
   });
 }

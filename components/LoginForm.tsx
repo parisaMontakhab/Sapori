@@ -1,10 +1,12 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useLogin } from "@/hooks/useAuth";
 import { getErrorMessage } from "@/lib/errors";
+import { inputClassName } from "@/lib/formStyles";
 
 export default function LoginForm() {
   const router = useRouter();
@@ -43,19 +45,29 @@ export default function LoginForm() {
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="w-full min-w-0 rounded-xl border border-cream-dark bg-cream px-4 py-3 focus:border-basil focus:ring-2 focus:ring-basil/20 focus:outline-none"
+          autoComplete="email"
+          className={inputClassName}
           required
         />
       </div>
       <div>
-        <label className="mb-1.5 block text-sm font-medium text-foreground/80">
-          Password
-        </label>
+        <div className="mb-1.5 flex items-center justify-between gap-3">
+          <label className="block text-sm font-medium text-foreground/80">
+            Password
+          </label>
+          <Link
+            href="/forgot-password"
+            className="text-sm font-semibold text-tomato hover:underline"
+          >
+            Forgot password?
+          </Link>
+        </div>
         <input
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="w-full min-w-0 rounded-xl border border-cream-dark bg-cream px-4 py-3 focus:border-basil focus:ring-2 focus:ring-basil/20 focus:outline-none"
+          autoComplete="current-password"
+          className={inputClassName}
           required
         />
       </div>

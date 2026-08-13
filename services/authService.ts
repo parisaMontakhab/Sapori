@@ -31,6 +31,28 @@ export interface UpdateProfileInput {
   photo?: File;
 }
 
+export interface ResetPasswordInput {
+  password: string;
+  passwordConfirm: string;
+}
+
+export interface UpdatePasswordInput {
+  passwordCurrent: string;
+  password: string;
+  passwordConfirm: string;
+}
+
+interface MessageResponse {
+  status: string;
+  message: string;
+}
+
+function persistAuthResponse(response: AuthResponse): User {
+  const user = mapUser(response.data.user);
+  saveAuthSession({ token: response.token, user });
+  return user;
+}
+
 export async function login(
   email: string,
   password: string,
@@ -40,9 +62,7 @@ export async function login(
     body: JSON.stringify({ email, password }),
   });
 
-  const user = mapUser(response.data.user);
-  saveAuthSession({ token: response.token, user });
-  return user;
+  return persistAuthResponse(response);
 }
 
 export async function register(
@@ -60,9 +80,40 @@ export async function register(
     }),
   });
 
-  const user = mapUser(response.data.user);
-  saveAuthSession({ token: response.token, user });
-  return user;
+  return persistAuthResponse(response);
+}
+
+export async function forgotPassword(email: string): Promise<string> {
+  const response = await apiFetch<MessageResponse>("/users/forgotPassword", {
+    method: "POST",
+    body: JSON.stringify({ email }),
+  });
+
+  return response.message;
+}
+
+export async function resetPassword(
+  token: string,
+  input: ResetPasswordInput,
+): Promise<User> {
+  const response = await apiFetch<AuthResponse>(
+    `/users/resetPassword/${token}`,
+    {
+      method: "PATCH",
+      body: JSON.stringify(input),
+    },
+  );
+
+  return persistAuthResponse(response);
+}
+
+export async function updatePassword(input: UpdatePasswordInput): Promise<User> {
+  const response = await apiFetch<AuthResponse>("/users/updateMyPassword", {
+    method: "PATCH",
+    body: JSON.stringify(input),
+  });
+
+  return persistAuthResponse(response);
 }
 
 export async function getUserById(id: string): Promise<User | null> {
