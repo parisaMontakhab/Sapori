@@ -72,6 +72,15 @@ function getNavbarDisplayName(name: string): string {
 }
 
 function NavUserAvatar({ user }: { user: User }) {
+  return (
+    <NavUserAvatarImage
+      key={user.photoUrl ?? "no-photo"}
+      user={user}
+    />
+  );
+}
+
+function NavUserAvatarImage({ user }: { user: User }) {
   const [imageFailed, setImageFailed] = useState(false);
   const showPhoto = Boolean(user.photoUrl) && !imageFailed;
 
@@ -132,8 +141,13 @@ export default function Navbar() {
     atPathname: pathname,
   });
   const { data: currentUser } = useCurrentUser();
-  const user = currentUser ?? getLoggedInUser();
-  const isLoggedIn = Boolean(getAuthToken() && user);
+  const hasToken = Boolean(getAuthToken());
+  const user = !hasToken
+    ? null
+    : currentUser !== undefined
+      ? currentUser
+      : getLoggedInUser();
+  const isLoggedIn = Boolean(hasToken && user);
   const cartCount = useSyncExternalStore(
     subscribeToCart,
     getCartItemCount,
