@@ -4,8 +4,11 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect } from "react";
 import MenuPagination from "@/components/MenuPagination";
 import ProductCard from "@/components/ProductCard";
+import ProductGridSkeleton from "@/components/ProductGridSkeleton";
+import QueryErrorState from "@/components/QueryErrorState";
 import SearchBar from "@/components/SearchBar";
 import { useProductsPaginated } from "@/hooks/useProducts";
+import { getErrorMessage } from "@/lib/errors";
 import { MENU_PAGE_SIZE } from "@/services/productService";
 
 interface MenuPageContentProps {
@@ -50,12 +53,22 @@ export default function MenuPageContent({
   const category = searchParams.get("category")?.trim() || undefined;
   const requestedPage = Math.max(1, Number(searchParams.get("page")) || 1);
 
-  const { data, isPending } = useProductsPaginated({
+  const {
+    data,
+    isPending,
+    isFetching,
+    isError,
+    error,
+    refetch,
+    isRefetching,
+  } = useProductsPaginated({
     page: requestedPage,
     limit: MENU_PAGE_SIZE,
     search,
     category,
   });
+
+  const isLoading = isPending || isFetching;
 
   const totalPages = data?.totalPages ?? 0;
   const page =
@@ -108,7 +121,7 @@ export default function MenuPageContent({
         ))}
       </div>
 
-      {search && (
+      {search && !isLoading && !isError && (
         <p className="text-sm text-foreground/60">
           {totalProducts} result{totalProducts !== 1 ? "s" : ""}
           {" for "}
@@ -116,7 +129,19 @@ export default function MenuPageContent({
         </p>
       )}
 
-      {isPending ? null : products.length === 0 ? (
+      {isLoading ? (
+        <ProductGridSkeleton count={MENU_PAGE_SIZE} />
+      ) : isError ? (
+        <QueryErrorState
+          title="Unable to load menu"
+          message={getErrorMessage(
+            error,
+            "Something went wrong while loading products.",
+          )}
+          onRetry={() => refetch()}
+          isRetrying={isRefetching}
+        />
+      ) : products.length === 0 ? (
         <div className="rounded-2xl bg-white p-12 text-center shadow-md">
           <p className="text-4xl">🍽️</p>
           <p className="mt-4 text-lg font-medium">No dishes found</p>

@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import MenuPageContent from "@/components/MenuPageContent";
+import ProductGridSkeleton from "@/components/ProductGridSkeleton";
 import { getProducts } from "@/services/productService";
 
 export default async function MenuPage() {
@@ -14,8 +15,10 @@ export default async function MenuPage() {
             <h1 className="text-2xl font-bold text-foreground sm:text-3xl">
               Our Menu
             </h1>
-            <p className="mt-2 text-sm text-foreground/60">Loading menu...</p>
+            <p className="mt-2 h-5 w-full max-w-xl animate-pulse rounded bg-cream-dark" />
+            <div className="mt-6 h-11 w-full max-w-xl animate-pulse rounded-full bg-cream-dark" />
           </div>
+          <ProductGridSkeleton count={6} />
         </div>
       }
     >

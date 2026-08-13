@@ -86,7 +86,10 @@ export async function getProductById(id: string): Promise<Product | null> {
     const response = await apiFetch<ProductDetailResponse>(`/products/${id}`);
     return mapProduct(response.data.data);
   } catch (error) {
-    if (error instanceof ApiError && error.status === 404) {
+    if (
+      error instanceof ApiError &&
+      (error.status === 404 || error.status === 400)
+    ) {
       return null;
     }
 
