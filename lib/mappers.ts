@@ -87,10 +87,15 @@ function mapReviewUser(
     return { id: user, name: "User" };
   }
 
+  const photo =
+    typeof user.photo === "string" && user.photo.trim().length > 0
+      ? user.photo
+      : undefined;
+
   return {
     id: toId(user),
     name: user.name,
-    photoUrl: resolveUserPhotoUrl(user.photo),
+    photoUrl: resolveUserPhotoUrl(photo),
   };
 }
 

@@ -17,6 +17,7 @@ export const queryKeys = {
     me: ["auth", "me"] as const,
   },
   reviews: {
+    all: ["reviews"] as const,
     product: (productId: string) => ["reviews", productId] as const,
   },
 };

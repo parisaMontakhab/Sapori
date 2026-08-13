@@ -2,6 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/queryKeys";
+import { invalidateAllReviewQueries } from "@/lib/reviews";
 import {
   forgotPassword,
   getUserById,
@@ -66,8 +67,11 @@ export function useUpdateProfile() {
 
   return useMutation({
     mutationFn: (input: UpdateProfileInput) => updateProfile(input),
-    onSuccess: (user) => {
+    onSuccess: (user, variables) => {
       queryClient.setQueryData(queryKeys.auth.me, user);
+      if (variables.photo) {
+        invalidateAllReviewQueries(queryClient);
+      }
     },
   });
 }

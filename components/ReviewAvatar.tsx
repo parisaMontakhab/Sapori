@@ -5,6 +5,15 @@ import { useState } from "react";
 import type { ReviewUser } from "@/types";
 
 export default function ReviewAvatar({ user }: { user: ReviewUser }) {
+  return (
+    <ReviewAvatarImage
+      key={user.photoUrl ?? "no-photo"}
+      user={user}
+    />
+  );
+}
+
+function ReviewAvatarImage({ user }: { user: ReviewUser }) {
   const [imageFailed, setImageFailed] = useState(false);
   const showPhoto = Boolean(user.photoUrl) && !imageFailed;
 

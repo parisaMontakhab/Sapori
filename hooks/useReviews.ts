@@ -11,7 +11,7 @@ import {
 } from "@/services/reviewService";
 import type { ReviewPayload } from "@/types";
 
-function invalidateReviewRelatedQueries(
+export function invalidateReviewRelatedQueries(
   queryClient: ReturnType<typeof useQueryClient>,
   productId: string,
 ) {
