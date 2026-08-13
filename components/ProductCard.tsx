@@ -6,6 +6,10 @@ import AddToCartButton from "./AddToCartButton";
 import ProductImage from "./ProductImage";
 
 export default function ProductCard({ product }: { product: Product }) {
+  const reviewCount = product.ratingsQuantity ?? 0;
+  const hasReviews = reviewCount > 0;
+  const averageRating = product.ratingsAverage ?? 0;
+
   return (
     <article className="overflow-hidden rounded-2xl bg-white shadow-md transition-shadow hover:shadow-xl">
       <Link
@@ -25,6 +29,23 @@ export default function ProductCard({ product }: { product: Product }) {
             {product.name}
           </h3>
         </Link>
+
+        {hasReviews ? (
+          <p
+            className="mt-1 flex items-center gap-1 text-sm text-foreground/70"
+            aria-label={`${averageRating.toFixed(1)} out of 5 stars, ${reviewCount} reviews`}
+          >
+            <span className="text-orange" aria-hidden>
+              ★
+            </span>
+            <span className="font-medium text-foreground">
+              {averageRating.toFixed(1)}
+            </span>
+            <span className="text-foreground/50">({reviewCount})</span>
+          </p>
+        ) : (
+          <p className="mt-1 text-sm text-foreground/50">No reviews yet</p>
+        )}
 
         <p className="mt-1 line-clamp-2 text-sm text-foreground/70">
           {product.description}
