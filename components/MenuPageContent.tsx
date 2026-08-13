@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import MenuPagination from "@/components/MenuPagination";
 import ProductCard from "@/components/ProductCard";
 import ProductGridSkeleton from "@/components/ProductGridSkeleton";
@@ -59,6 +59,12 @@ function parsePageParam(raw: string | null): {
   return { requestedPage: parsed, isInvalid: false };
 }
 
+type PaginationMeta = {
+  search?: string;
+  category?: string;
+  totalPages: number;
+};
+
 export default function MenuPageContent({
   categories,
   catalogProductCount,
@@ -67,9 +73,24 @@ export default function MenuPageContent({
   const searchParams = useSearchParams();
   const search = searchParams.get("search")?.trim() || undefined;
   const category = searchParams.get("category")?.trim() || undefined;
-  const { requestedPage, isInvalid: isPageParamInvalid } = parsePageParam(
-    searchParams.get("page"),
+  const pageParam = searchParams.get("page");
+  const { requestedPage, isInvalid: isPageParamInvalid } = parsePageParam(pageParam);
+  const [paginationMeta, setPaginationMeta] = useState<PaginationMeta | null>(
+    null,
   );
+
+  const cachedTotalPages =
+    paginationMeta &&
+    paginationMeta.search === search &&
+    paginationMeta.category === category
+      ? paginationMeta.totalPages
+      : 0;
+
+  const fetchPage = isPageParamInvalid
+    ? 1
+    : cachedTotalPages > 0 && requestedPage > cachedTotalPages
+      ? cachedTotalPages
+      : requestedPage;
 
   const {
     data,
@@ -80,7 +101,7 @@ export default function MenuPageContent({
     refetch,
     isRefetching,
   } = useProductsPaginated({
-    page: requestedPage,
+    page: fetchPage,
     limit: MENU_PAGE_SIZE,
     search,
     category,
@@ -89,8 +110,20 @@ export default function MenuPageContent({
   const isLoading = isPending || isFetching;
 
   const totalPages = data?.totalPages ?? 0;
+
+  if (
+    totalPages > 0 &&
+    !isPageParamInvalid &&
+    (paginationMeta?.search !== search ||
+      paginationMeta?.category !== category ||
+      paginationMeta?.totalPages !== totalPages)
+  ) {
+    setPaginationMeta({ search, category, totalPages });
+  }
+
   const isPageOutOfRange = totalPages > 0 && requestedPage > totalPages;
-  const isNormalizingPage = isPageParamInvalid || isPageOutOfRange;
+  const isAwaitingUpperBoundCorrection =
+    isPageOutOfRange && fetchPage === requestedPage;
   const page =
     totalPages > 0
       ? Math.min(requestedPage, totalPages)
@@ -175,7 +208,7 @@ export default function MenuPageContent({
           isRetrying={isRefetching}
         />
       ) : products.length === 0 ? (
-        isNormalizingPage ? (
+        isAwaitingUpperBoundCorrection ? (
           <ProductGridSkeleton count={MENU_PAGE_SIZE} />
         ) : (
         <div className="rounded-2xl bg-white p-12 text-center shadow-md">
