@@ -14,6 +14,7 @@ import { useReviewedProductIds } from "@/hooks/useReviews";
 import { getErrorMessage } from "@/lib/errors";
 import { queryKeys } from "@/lib/queryKeys";
 import { getProductReviewHref, isReviewableOrder } from "@/lib/reviews";
+import { isInlinePhotoUrl } from "@/lib/userPhoto";
 import type { Order, Product, User } from "@/types";
 import { getAuthToken, getLoggedInUser, logout } from "@/store/auth";
 
@@ -100,7 +101,7 @@ function ProfileAvatarImage({
   const showPhoto = Boolean(displayUrl) && !imageFailed;
 
   if (showPhoto && displayUrl) {
-    if (displayUrl.startsWith("blob:")) {
+    if (isInlinePhotoUrl(displayUrl)) {
       return (
         <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-full shadow-md sm:h-20 sm:w-20">
           {/* eslint-disable-next-line @next/next/no-img-element */}

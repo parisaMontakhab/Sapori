@@ -8,6 +8,7 @@ import { useEffect, useState, useSyncExternalStore } from "react";
 import { toast } from "sonner";
 import { useCurrentUser } from "@/hooks/useAuth";
 import { queryKeys } from "@/lib/queryKeys";
+import { isInlinePhotoUrl } from "@/lib/userPhoto";
 import { getCartItemCount, subscribeToCart } from "@/store/cart";
 import { getAuthToken, getLoggedInUser, logout } from "@/store/auth";
 import type { User } from "@/types";
@@ -85,6 +86,20 @@ function NavUserAvatarImage({ user }: { user: User }) {
   const showPhoto = Boolean(user.photoUrl) && !imageFailed;
 
   if (showPhoto && user.photoUrl) {
+    if (isInlinePhotoUrl(user.photoUrl)) {
+      return (
+        <div className="relative h-8 w-8 shrink-0 overflow-hidden rounded-full shadow-sm">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={user.photoUrl}
+            alt=""
+            className="h-full w-full object-cover"
+            onError={() => setImageFailed(true)}
+          />
+        </div>
+      );
+    }
+
     return (
       <div className="relative h-8 w-8 shrink-0 overflow-hidden rounded-full shadow-sm">
         <Image
