@@ -6,6 +6,7 @@ import { queryKeys } from "@/lib/queryKeys";
 import {
   createReview,
   deleteReview,
+  getAllReviews,
   getProductReviews,
   updateReview,
 } from "@/services/reviewService";
@@ -28,6 +29,13 @@ export function useProductReviews(productId: string) {
   return useQuery({
     queryKey: queryKeys.reviews.product(productId),
     queryFn: () => getProductReviews(productId),
+  });
+}
+
+export function useAllReviews() {
+  return useQuery({
+    queryKey: queryKeys.reviews.all,
+    queryFn: getAllReviews,
   });
 }
 

@@ -4,10 +4,25 @@ import type { Review, ReviewPayload } from "@/types";
 
 interface ReviewsListResponse {
   status: string;
-  result: number;
+  results: number;
   data: {
-    data: BackendReview[];
+    reviews: BackendReview[];
   };
+}
+
+function mapReviewsList(
+  response: ReviewsListResponse,
+  productId?: string,
+): Review[] {
+  const rawReviews = response.data?.reviews;
+
+  if (!rawReviews || !Array.isArray(rawReviews)) {
+    return [];
+  }
+
+  return rawReviews
+    .map((review) => mapReview(review, productId))
+    .filter((review): review is Review => review !== null);
 }
 
 interface ReviewResponse {
@@ -22,15 +37,13 @@ export async function getProductReviews(productId: string): Promise<Review[]> {
     `/products/${productId}/reviews`,
   );
 
-  const rawReviews = response.data?.data;
+  return mapReviewsList(response, productId);
+}
 
-  if (!rawReviews || !Array.isArray(rawReviews)) {
-    return [];
-  }
+export async function getAllReviews(): Promise<Review[]> {
+  const response = await apiFetch<ReviewsListResponse>("/reviews");
 
-  return rawReviews
-    .map((review) => mapReview(review, productId))
-    .filter((review): review is Review => review !== null);
+  return mapReviewsList(response);
 }
 
 export async function createReview(

@@ -112,6 +112,13 @@ export function mapReview(
   if (!user) return null;
 
   const resolvedProductId = productId ?? toId(review.product);
+  const productName =
+    typeof review.product === "object" &&
+    review.product !== null &&
+    "name" in review.product &&
+    typeof review.product.name === "string"
+      ? review.product.name
+      : undefined;
 
   return {
     id,
@@ -120,6 +127,7 @@ export function mapReview(
     createdAt: review.createdAt,
     user,
     productId: resolvedProductId,
+    productName,
   };
 }
 

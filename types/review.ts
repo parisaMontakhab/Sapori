@@ -11,6 +11,7 @@ export interface Review {
   createdAt: string;
   user: ReviewUser;
   productId: string;
+  productName?: string;
 }
 
 export interface ReviewPayload {
