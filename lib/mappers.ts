@@ -4,6 +4,8 @@ import type {
   OrderStatus,
   PaymentStatus,
   Product,
+  Review,
+  ReviewUser,
   User,
 } from "@/types";
 import { resolveUserPhotoUrl } from "@/lib/userPhoto";
@@ -19,6 +21,21 @@ export interface BackendProduct extends MongoDocument {
   price: number;
   imageUrl: string;
   category: string;
+  ratingsAverage?: number;
+  ratingsQuantity?: number;
+}
+
+export interface BackendReviewUser extends MongoDocument {
+  name: string;
+  photo?: string;
+}
+
+export interface BackendReview extends MongoDocument {
+  review: string;
+  rating: number;
+  createdAt: string;
+  user: BackendReviewUser | string;
+  product: MongoDocument | string;
 }
 
 export interface BackendUser extends MongoDocument {
@@ -42,7 +59,8 @@ export interface BackendOrder extends MongoDocument {
   createdAt: string;
 }
 
-export function toId(doc: MongoDocument | string): string {
+export function toId(doc: MongoDocument | string | null | undefined): string {
+  if (!doc) return "";
   if (typeof doc === "string") return doc;
   return doc._id ?? doc.id ?? "";
 }
@@ -55,6 +73,48 @@ export function mapProduct(product: BackendProduct): Product {
     price: product.price,
     imageUrl: product.imageUrl,
     category: product.category,
+    ratingsAverage: product.ratingsAverage,
+    ratingsQuantity: product.ratingsQuantity,
+  };
+}
+
+function mapReviewUser(
+  user: BackendReviewUser | string | null | undefined,
+): ReviewUser | null {
+  if (!user) return null;
+
+  if (typeof user === "string") {
+    return { id: user, name: "User" };
+  }
+
+  return {
+    id: toId(user),
+    name: user.name,
+    photoUrl: resolveUserPhotoUrl(user.photo),
+  };
+}
+
+export function mapReview(
+  review: BackendReview | null | undefined,
+  productId?: string,
+): Review | null {
+  if (!review) return null;
+
+  const id = toId(review);
+  if (!id) return null;
+
+  const user = mapReviewUser(review.user);
+  if (!user) return null;
+
+  const resolvedProductId = productId ?? toId(review.product);
+
+  return {
+    id,
+    review: review.review,
+    rating: review.rating,
+    createdAt: review.createdAt,
+    user,
+    productId: resolvedProductId,
   };
 }
 

@@ -4,13 +4,15 @@ import Image from "next/image";
 import Link from "next/link";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useCurrentUser, useUpdateProfile } from "@/hooks/useAuth";
 import { useMyOrders } from "@/hooks/useOrders";
 import { useProducts } from "@/hooks/useProducts";
+import { useReviewedProductIds } from "@/hooks/useReviews";
 import { getErrorMessage } from "@/lib/errors";
 import { queryKeys } from "@/lib/queryKeys";
+import { getProductReviewHref, isReviewableOrder } from "@/lib/reviews";
 import type { Order, Product, User } from "@/types";
 import { getAuthToken, getLoggedInUser, logout } from "@/store/auth";
 
@@ -20,6 +22,23 @@ function getItemCount(order: Order): number {
 
 function formatItemSummary(count: number): string {
   return count === 1 ? "1 item" : `${count} items`;
+}
+
+function OrderItemReviewLink({
+  productId,
+  hasReview,
+}: {
+  productId: string;
+  hasReview: boolean;
+}) {
+  return (
+    <Link
+      href={getProductReviewHref(productId)}
+      className="shrink-0 text-sm font-semibold text-tomato hover:underline"
+    >
+      {hasReview ? "Edit Review" : "Write a Review"}
+    </Link>
+  );
 }
 
 function getStatusBadgeClasses(status: Order["status"] | "cancelled"): string {
@@ -140,6 +159,23 @@ export default function ProfilePage() {
   } = useMyOrders();
   const { data: products = [] } = useProducts();
   const ordersErrorToasted = useRef(false);
+  const reviewableProductIds = useMemo(() => {
+    const ids = new Set<string>();
+
+    for (const order of orders) {
+      if (!isReviewableOrder(order)) continue;
+
+      for (const item of order.items) {
+        ids.add(item.productId);
+      }
+    }
+
+    return [...ids];
+  }, [orders]);
+  const reviewedProductIds = useReviewedProductIds(
+    reviewableProductIds,
+    user?.id,
+  );
 
   useEffect(() => {
     if (isOrdersError && ordersError && !ordersErrorToasted.current) {
@@ -499,55 +535,77 @@ export default function ProfilePage() {
               return (
                 <article
                   key={order.id}
-                  className="flex gap-4 rounded-2xl bg-white p-4 shadow-md sm:gap-5 sm:p-5"
+                  className="rounded-2xl bg-white p-4 shadow-md sm:p-5"
                 >
-                  <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-xl sm:h-28 sm:w-28">
-                    {firstImage ? (
-                      <Image
-                        src={firstImage}
-                        alt={order.items[0]?.name ?? "Order item"}
-                        fill
-                        sizes="(max-width: 640px) 96px, 112px"
-                        className="object-cover"
-                      />
-                    ) : (
-                      <div className="flex h-full w-full items-center justify-center bg-cream-dark text-3xl">
-                        🍽️
-                      </div>
-                    )}
-                  </div>
+                  <div className="flex gap-4 sm:gap-5">
+                    <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-xl sm:h-28 sm:w-28">
+                      {firstImage ? (
+                        <Image
+                          src={firstImage}
+                          alt={order.items[0]?.name ?? "Order item"}
+                          fill
+                          sizes="(max-width: 640px) 96px, 112px"
+                          className="object-cover"
+                        />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center bg-cream-dark text-3xl">
+                          🍽️
+                        </div>
+                      )}
+                    </div>
 
-                  <div className="flex min-w-0 flex-1 flex-col justify-between gap-3">
-                    <div className="min-w-0">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <p className="font-bold text-foreground">
-                          Order #{order.orderNumber ?? order.id}
+                    <div className="flex min-w-0 flex-1 flex-col justify-between gap-3">
+                      <div className="min-w-0">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <p className="font-bold text-foreground">
+                            Order #{order.orderNumber ?? order.id}
+                          </p>
+                          <span
+                            className={`rounded-full px-3 py-1 text-xs font-semibold ${getStatusBadgeClasses(order.status)}`}
+                          >
+                            {formatStatusLabel(order.status)}
+                          </span>
+                        </div>
+                        <p className="mt-2 text-sm text-foreground/60">
+                          {new Date(order.createdAt).toLocaleDateString("en-GB", {
+                            day: "numeric",
+                            month: "long",
+                            year: "numeric",
+                          })}
                         </p>
-                        <span
-                          className={`rounded-full px-3 py-1 text-xs font-semibold ${getStatusBadgeClasses(order.status)}`}
-                        >
-                          {formatStatusLabel(order.status)}
-                        </span>
+                        <p className="mt-1 text-sm font-medium text-foreground/80">
+                          {formatItemSummary(itemCount)}
+                        </p>
                       </div>
-                      <p className="mt-2 text-sm text-foreground/60">
-                        {new Date(order.createdAt).toLocaleDateString("en-GB", {
-                          day: "numeric",
-                          month: "long",
-                          year: "numeric",
-                        })}
-                      </p>
-                      <p className="mt-1 text-sm font-medium text-foreground/80">
-                        {formatItemSummary(itemCount)}
-                      </p>
-                    </div>
 
-                    <div className="flex items-center justify-between gap-3 sm:flex-col sm:items-end sm:justify-center">
-                      <p className="text-sm text-foreground/60 sm:text-right">Total</p>
-                      <p className="text-xl font-bold text-tomato sm:text-2xl">
-                        €{order.total}
-                      </p>
+                      <div className="flex items-center justify-between gap-3 sm:flex-col sm:items-end sm:justify-center">
+                        <p className="text-sm text-foreground/60 sm:text-right">Total</p>
+                        <p className="text-xl font-bold text-tomato sm:text-2xl">
+                          €{order.total}
+                        </p>
+                      </div>
                     </div>
                   </div>
+
+                  {isReviewableOrder(order) && order.items.length > 0 && (
+                    <ul className="mt-4 space-y-2 border-t border-cream-dark pt-4">
+                      {order.items.map((item) => (
+                        <li
+                          key={`${order.id}-${item.productId}`}
+                          className="flex flex-wrap items-center justify-between gap-2"
+                        >
+                          <span className="min-w-0 truncate text-sm text-foreground/80">
+                            {item.name}
+                            {item.quantity > 1 ? ` × ${item.quantity}` : ""}
+                          </span>
+                          <OrderItemReviewLink
+                            productId={item.productId}
+                            hasReview={reviewedProductIds.has(item.productId)}
+                          />
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </article>
               );
             })}

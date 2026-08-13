@@ -1,10 +1,12 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect } from "react";
 import AddToCartButton from "@/components/AddToCartButton";
 import ProductDetailSkeleton from "@/components/ProductDetailSkeleton";
 import ProductImage from "@/components/ProductImage";
 import ProductNotFound from "@/components/ProductNotFound";
+import ProductReviewsSection from "@/components/ProductReviewsSection";
 import QueryErrorState from "@/components/QueryErrorState";
 import { useProduct } from "@/hooks/useProducts";
 import { getErrorMessage } from "@/lib/errors";
@@ -26,6 +28,16 @@ export default function ProductPageContent({
   } = useProduct(productId);
 
   const isLoading = isPending || isFetching;
+
+  useEffect(() => {
+    if (!product) return;
+    if (typeof window === "undefined") return;
+    if (window.location.hash !== "#reviews") return;
+
+    requestAnimationFrame(() => {
+      document.getElementById("reviews")?.scrollIntoView({ behavior: "smooth" });
+    });
+  }, [product]);
 
   if (isLoading) {
     return <ProductDetailSkeleton />;
@@ -86,6 +98,12 @@ export default function ProductPageContent({
           </div>
         </div>
       </div>
+
+      <ProductReviewsSection
+        productId={product.id}
+        ratingsAverage={product.ratingsAverage}
+        ratingsQuantity={product.ratingsQuantity}
+      />
     </div>
   );
 }
