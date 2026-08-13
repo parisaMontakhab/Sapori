@@ -31,8 +31,9 @@ function getApiUrl(): string {
 
 function buildHeaders(options?: RequestInit): Headers {
   const headers = new Headers(options?.headers);
+  const isFormData = options?.body instanceof FormData;
 
-  if (!headers.has("Content-Type")) {
+  if (!isFormData && !headers.has("Content-Type")) {
     headers.set("Content-Type", "application/json");
   }
 

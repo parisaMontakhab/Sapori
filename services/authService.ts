@@ -1,6 +1,6 @@
 import { apiFetch } from "@/lib/api";
 import { mapUser, type BackendUser } from "@/lib/mappers";
-import { saveAuthSession } from "@/store/auth";
+import { saveAuthSession, saveLoggedInUser } from "@/store/auth";
 import type { User } from "@/types";
 
 interface AuthResponse {
@@ -16,6 +16,19 @@ interface CurrentUserResponse {
   data: {
     data: BackendUser;
   };
+}
+
+interface UpdateMeResponse {
+  status: string;
+  data: {
+    user: BackendUser;
+  };
+}
+
+export interface UpdateProfileInput {
+  name: string;
+  email: string;
+  photo?: File;
 }
 
 export async function login(
@@ -61,4 +74,23 @@ export async function getUserById(id: string): Promise<User | null> {
   } catch {
     return null;
   }
+}
+
+export async function updateProfile(input: UpdateProfileInput): Promise<User> {
+  const formData = new FormData();
+  formData.append("name", input.name);
+  formData.append("email", input.email);
+
+  if (input.photo) {
+    formData.append("photo", input.photo);
+  }
+
+  const response = await apiFetch<UpdateMeResponse>("/users/updateMe", {
+    method: "PATCH",
+    body: formData,
+  });
+
+  const user = mapUser(response.data.user);
+  saveLoggedInUser(user);
+  return user;
 }

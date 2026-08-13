@@ -6,7 +6,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { useCurrentUser } from "@/hooks/useAuth";
+import { useCurrentUser, useUpdateProfile } from "@/hooks/useAuth";
 import { useMyOrders } from "@/hooks/useOrders";
 import { useProducts } from "@/hooks/useProducts";
 import { getErrorMessage } from "@/lib/errors";
@@ -51,15 +51,52 @@ function getFavoriteCategory(orders: Order[], products: Product[]): string {
   return topCategory?.[0] ?? "—";
 }
 
-function ProfileAvatar({ user }: { user: User }) {
-  const [imageFailed, setImageFailed] = useState(false);
-  const showPhoto = Boolean(user.photoUrl) && !imageFailed;
+function ProfileAvatar({
+  user,
+  previewUrl,
+}: {
+  user: User;
+  previewUrl?: string | null;
+}) {
+  const displayUrl = previewUrl ?? user.photoUrl;
 
-  if (showPhoto && user.photoUrl) {
+  return (
+    <ProfileAvatarImage
+      key={displayUrl ?? "no-photo"}
+      user={user}
+      displayUrl={displayUrl}
+    />
+  );
+}
+
+function ProfileAvatarImage({
+  user,
+  displayUrl,
+}: {
+  user: User;
+  displayUrl?: string;
+}) {
+  const [imageFailed, setImageFailed] = useState(false);
+  const showPhoto = Boolean(displayUrl) && !imageFailed;
+
+  if (showPhoto && displayUrl) {
+    if (displayUrl.startsWith("blob:")) {
+      return (
+        <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-full shadow-md sm:h-20 sm:w-20">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={displayUrl}
+            alt={user.name}
+            className="h-full w-full object-cover"
+          />
+        </div>
+      );
+    }
+
     return (
       <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-full shadow-md sm:h-20 sm:w-20">
         <Image
-          src={user.photoUrl}
+          src={displayUrl}
           alt={user.name}
           fill
           sizes="80px"
@@ -77,11 +114,24 @@ function ProfileAvatar({ user }: { user: User }) {
   );
 }
 
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+const inputClassName =
+  "w-full min-w-0 rounded-xl border border-cream-dark bg-cream px-4 py-3 focus:border-basil focus:ring-2 focus:ring-basil/20 focus:outline-none";
+
 export default function ProfilePage() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const { data: currentUser } = useCurrentUser();
+  const updateProfileMutation = useUpdateProfile();
   const user = currentUser ?? getLoggedInUser();
+  const [isEditing, setIsEditing] = useState(false);
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [photoPreviewUrl, setPhotoPreviewUrl] = useState<string | null>(null);
+  const photoPreviewUrlRef = useRef<string | null>(null);
+  const [validationError, setValidationError] = useState("");
   const {
     data: orders = [],
     isPending: isOrdersPending,
@@ -103,6 +153,110 @@ export default function ProfilePage() {
       ordersErrorToasted.current = false;
     }
   }, [isOrdersError, ordersError]);
+
+  useEffect(() => {
+    photoPreviewUrlRef.current = photoPreviewUrl;
+  }, [photoPreviewUrl]);
+
+  useEffect(() => {
+    return () => {
+      if (photoPreviewUrlRef.current) {
+        URL.revokeObjectURL(photoPreviewUrlRef.current);
+      }
+    };
+  }, []);
+
+  function revokePhotoPreview(url: string | null) {
+    if (url) {
+      URL.revokeObjectURL(url);
+    }
+  }
+
+  function resetPhotoSelection() {
+    setPhotoPreviewUrl((current) => {
+      revokePhotoPreview(current);
+      return null;
+    });
+    setPhotoFile(null);
+  }
+
+  function handleStartEdit() {
+    if (!user) return;
+    setName(user.name);
+    setEmail(user.email);
+    resetPhotoSelection();
+    setValidationError("");
+    setIsEditing(true);
+  }
+
+  function handleCancelEdit() {
+    if (!user) return;
+    resetPhotoSelection();
+    setName(user.name);
+    setEmail(user.email);
+    setValidationError("");
+    setIsEditing(false);
+  }
+
+  function handlePhotoChange(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      setValidationError("Please select a valid image file.");
+      event.target.value = "";
+      return;
+    }
+
+    setValidationError("");
+    setPhotoFile(file);
+    setPhotoPreviewUrl((current) => {
+      revokePhotoPreview(current);
+      return URL.createObjectURL(file);
+    });
+  }
+
+  function handleSaveProfile(event: React.FormEvent) {
+    event.preventDefault();
+
+    const trimmedName = name.trim();
+    const trimmedEmail = email.trim();
+
+    if (!trimmedName) {
+      setValidationError("Name cannot be empty.");
+      return;
+    }
+
+    if (!trimmedEmail) {
+      setValidationError("Email cannot be empty.");
+      return;
+    }
+
+    if (!EMAIL_PATTERN.test(trimmedEmail)) {
+      setValidationError("Please enter a valid email address.");
+      return;
+    }
+
+    setValidationError("");
+
+    updateProfileMutation.mutate(
+      {
+        name: trimmedName,
+        email: trimmedEmail,
+        photo: photoFile ?? undefined,
+      },
+      {
+        onSuccess: () => {
+          resetPhotoSelection();
+          setIsEditing(false);
+          toast.success("Profile updated successfully!");
+        },
+        onError: (error) => {
+          toast.error(getErrorMessage(error, "Failed to update profile"));
+        },
+      },
+    );
+  }
 
   function handleLogout() {
     logout();
@@ -156,27 +310,128 @@ export default function ProfilePage() {
 
       <div className="overflow-hidden rounded-3xl bg-white shadow-md">
         <div className="bg-gradient-to-r from-tomato/10 via-orange/10 to-cream-dark px-4 py-5 sm:px-8">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between sm:gap-5">
-            <div className="flex min-w-0 items-center gap-4 sm:gap-5">
-              <ProfileAvatar user={user} />
-              <div className="min-w-0">
-                <p className="truncate text-xl font-bold text-foreground sm:text-2xl">
-                  {user.name}
+          {isEditing ? (
+            <form
+              onSubmit={handleSaveProfile}
+              className="flex flex-col gap-5"
+            >
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-5">
+                <ProfileAvatar
+                  user={{ ...user, name: name.trim() || user.name }}
+                  previewUrl={photoPreviewUrl}
+                />
+                <div className="min-w-0 flex-1 space-y-4">
+                  <div>
+                    <label
+                      htmlFor="profile-photo"
+                      className="mb-1.5 block text-sm font-medium text-foreground/80"
+                    >
+                      Profile photo
+                    </label>
+                    <input
+                      id="profile-photo"
+                      type="file"
+                      accept="image/*"
+                      onChange={handlePhotoChange}
+                      className="w-full min-w-0 text-sm text-foreground/70 file:mr-3 file:rounded-full file:border-0 file:bg-tomato/10 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-tomato hover:file:bg-tomato/20"
+                    />
+                    <p className="mt-1 text-xs text-foreground/50">
+                      Select one image. It will upload when you save.
+                    </p>
+                  </div>
+                  <div>
+                    <label
+                      htmlFor="profile-name"
+                      className="mb-1.5 block text-sm font-medium text-foreground/80"
+                    >
+                      Name
+                    </label>
+                    <input
+                      id="profile-name"
+                      type="text"
+                      value={name}
+                      onChange={(event) => setName(event.target.value)}
+                      className={inputClassName}
+                      autoComplete="name"
+                    />
+                  </div>
+                  <div>
+                    <label
+                      htmlFor="profile-email"
+                      className="mb-1.5 block text-sm font-medium text-foreground/80"
+                    >
+                      Email
+                    </label>
+                    <input
+                      id="profile-email"
+                      type="email"
+                      value={email}
+                      onChange={(event) => setEmail(event.target.value)}
+                      className={inputClassName}
+                      autoComplete="email"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {validationError && (
+                <p className="rounded-lg bg-tomato/10 px-4 py-2 text-sm text-tomato">
+                  {validationError}
                 </p>
-                <p className="mt-1 text-sm text-foreground/60">
-                  Food Lover • Member since 2026
-                </p>
-                <p className="mt-2 truncate text-sm text-foreground/70">{user.email}</p>
+              )}
+
+              <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
+                <button
+                  type="button"
+                  onClick={handleCancelEdit}
+                  disabled={updateProfileMutation.isPending}
+                  className="min-h-11 rounded-full border border-cream-dark bg-white px-6 py-2.5 text-sm font-semibold text-foreground/80 transition-colors hover:bg-cream disabled:opacity-60"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={updateProfileMutation.isPending}
+                  className="min-h-11 rounded-full bg-tomato px-6 py-2.5 text-sm font-semibold text-white shadow-md transition-colors hover:bg-tomato-dark disabled:opacity-60"
+                >
+                  {updateProfileMutation.isPending ? "Saving..." : "Save Changes"}
+                </button>
+              </div>
+            </form>
+          ) : (
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between sm:gap-5">
+              <div className="flex min-w-0 items-center gap-4 sm:gap-5">
+                <ProfileAvatar user={user} />
+                <div className="min-w-0">
+                  <p className="truncate text-xl font-bold text-foreground sm:text-2xl">
+                    {user.name}
+                  </p>
+                  <p className="mt-1 text-sm text-foreground/60">
+                    Food Lover • Member since 2026
+                  </p>
+                  <p className="mt-2 truncate text-sm text-foreground/70">
+                    {user.email}
+                  </p>
+                </div>
+              </div>
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                <button
+                  type="button"
+                  onClick={handleStartEdit}
+                  className="min-h-11 rounded-full border border-basil/30 bg-white px-6 py-2.5 text-sm font-semibold text-basil transition-colors hover:bg-basil/5"
+                >
+                  Edit Profile
+                </button>
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="min-h-11 rounded-full border border-tomato/30 bg-white px-6 py-2.5 text-sm font-semibold text-tomato transition-colors hover:bg-tomato/5"
+                >
+                  Logout
+                </button>
               </div>
             </div>
-            <button
-              type="button"
-              onClick={handleLogout}
-              className="min-h-11 self-stretch rounded-full border border-tomato/30 bg-white px-6 py-2.5 text-sm font-semibold text-tomato transition-colors hover:bg-tomato/5 sm:self-center"
-            >
-              Logout
-            </button>
-          </div>
+          )}
         </div>
       </div>
 

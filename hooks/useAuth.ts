@@ -2,7 +2,13 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/queryKeys";
-import { getUserById, login, register } from "@/services/authService";
+import {
+  getUserById,
+  login,
+  register,
+  updateProfile,
+  type UpdateProfileInput,
+} from "@/services/authService";
 import { getAuthToken } from "@/store/auth";
 import type { User } from "@/types";
 
@@ -46,6 +52,17 @@ export function useRegister() {
     onSuccess: (user) => {
       queryClient.setQueryData(queryKeys.auth.me, user);
       queryClient.invalidateQueries({ queryKey: queryKeys.auth.me });
+    },
+  });
+}
+
+export function useUpdateProfile() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (input: UpdateProfileInput) => updateProfile(input),
+    onSuccess: (user) => {
+      queryClient.setQueryData(queryKeys.auth.me, user);
     },
   });
 }
