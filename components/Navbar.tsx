@@ -67,6 +67,10 @@ function NavLink({
   );
 }
 
+function getNavbarDisplayName(name: string): string {
+  return name.trim().split(/\s+/)[0] ?? name;
+}
+
 function NavUserAvatar({ user }: { user: User }) {
   const [imageFailed, setImageFailed] = useState(false);
   const showPhoto = Boolean(user.photoUrl) && !imageFailed;
@@ -114,7 +118,7 @@ function ProfileNavLink({
       aria-label={`${user.name} profile`}
     >
       <NavUserAvatar user={user} />
-      <span className="truncate text-sm">{user.name}</span>
+      <span className="truncate text-sm">{getNavbarDisplayName(user.name)}</span>
     </Link>
   );
 }
@@ -280,7 +284,7 @@ export default function Navbar() {
                 <div className="mb-2 flex items-center gap-3 rounded-xl px-4 py-3">
                   <NavUserAvatar user={user} />
                   <span className="truncate font-semibold text-foreground">
-                    {user.name}
+                    {getNavbarDisplayName(user.name)}
                   </span>
                 </div>
                 <Link
