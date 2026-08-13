@@ -43,6 +43,22 @@ function buildMenuUrl({
   return query ? `/menu?${query}` : "/menu";
 }
 
+function parsePageParam(raw: string | null): {
+  requestedPage: number;
+  isInvalid: boolean;
+} {
+  if (raw === null || raw.trim() === "") {
+    return { requestedPage: 1, isInvalid: false };
+  }
+
+  const parsed = Number(raw);
+  if (!Number.isFinite(parsed) || !Number.isInteger(parsed) || parsed < 1) {
+    return { requestedPage: 1, isInvalid: true };
+  }
+
+  return { requestedPage: parsed, isInvalid: false };
+}
+
 export default function MenuPageContent({
   categories,
   catalogProductCount,
@@ -51,7 +67,9 @@ export default function MenuPageContent({
   const searchParams = useSearchParams();
   const search = searchParams.get("search")?.trim() || undefined;
   const category = searchParams.get("category")?.trim() || undefined;
-  const requestedPage = Math.max(1, Number(searchParams.get("page")) || 1);
+  const { requestedPage, isInvalid: isPageParamInvalid } = parsePageParam(
+    searchParams.get("page"),
+  );
 
   const {
     data,
@@ -71,6 +89,8 @@ export default function MenuPageContent({
   const isLoading = isPending || isFetching;
 
   const totalPages = data?.totalPages ?? 0;
+  const isPageOutOfRange = totalPages > 0 && requestedPage > totalPages;
+  const isNormalizingPage = isPageParamInvalid || isPageOutOfRange;
   const page =
     totalPages > 0
       ? Math.min(requestedPage, totalPages)
@@ -79,12 +99,25 @@ export default function MenuPageContent({
   const totalProducts = data?.totalProducts ?? 0;
 
   useEffect(() => {
+    if (isPageParamInvalid) {
+      router.replace(buildMenuUrl({ page: 1, search, category }));
+      return;
+    }
+
     if (!data || totalPages === 0) return;
 
     if (requestedPage > totalPages) {
       router.replace(buildMenuUrl({ page: totalPages, search, category }));
     }
-  }, [category, data, requestedPage, router, search, totalPages]);
+  }, [
+    category,
+    data,
+    isPageParamInvalid,
+    requestedPage,
+    router,
+    search,
+    totalPages,
+  ]);
 
   function handlePageChange(nextPage: number) {
     const clampedPage = Math.min(
@@ -142,11 +175,15 @@ export default function MenuPageContent({
           isRetrying={isRefetching}
         />
       ) : products.length === 0 ? (
+        isNormalizingPage ? (
+          <ProductGridSkeleton count={MENU_PAGE_SIZE} />
+        ) : (
         <div className="rounded-2xl bg-white p-12 text-center shadow-md">
           <p className="text-4xl">🍽️</p>
           <p className="mt-4 text-lg font-medium">No dishes found</p>
           <p className="mt-1 text-foreground/60">Try a different search term.</p>
         </div>
+        )
       ) : (
         <>
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
