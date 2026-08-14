@@ -1,9 +1,11 @@
-import Image from "next/image";
-import Link from "next/link";
 import ProductCard from "@/components/ProductCard";
 import HomeSearchBar from "@/components/home/HomeSearchBar";
 import { HERO_IMAGE } from "@/components/home/foodImages";
 import { getProducts } from "@/services/productService";
+import Image from "next/image";
+import Link from "next/link";
+
+export const dynamic = "force-dynamic";
 
 const CATEGORIES = [
   { label: "Pizza", emoji: "🍕", search: "Pizza" },
