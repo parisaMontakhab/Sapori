@@ -47,7 +47,7 @@ export default function MenuPagination({
                 aria-current={isActive ? "page" : undefined}
                 className={`h-2.5 w-2.5 shrink-0 rounded-full transition-all ${
                   isActive
-                    ? "scale-125 bg-tomato shadow-sm"
+                    ? "bg-tomato shadow-sm"
                     : "bg-cream-dark hover:bg-orange/50"
                 }`}
               />
