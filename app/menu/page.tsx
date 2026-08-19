@@ -1,11 +1,15 @@
-import { Suspense } from "react";
 import MenuPageContent from "@/components/MenuPageContent";
 import ProductGridSkeleton from "@/components/ProductGridSkeleton";
 import { getProducts } from "@/services/productService";
+import { Suspense } from "react";
+
+export const dynamic = "force-dynamic";
 
 export default async function MenuPage() {
   const allProducts = await getProducts();
-  const categories = [...new Set(allProducts.map((product) => product.category))];
+  const categories = [
+    ...new Set(allProducts.map((product) => product.category)),
+  ];
 
   return (
     <Suspense
