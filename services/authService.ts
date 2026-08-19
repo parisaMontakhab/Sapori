@@ -27,7 +27,6 @@ interface UpdateMeResponse {
 
 export interface UpdateProfileInput {
   name: string;
-  email: string;
   photo?: File;
 }
 
@@ -130,7 +129,6 @@ export async function getUserById(id: string): Promise<User | null> {
 export async function updateProfile(input: UpdateProfileInput): Promise<User> {
   const formData = new FormData();
   formData.append("name", input.name);
-  formData.append("email", input.email);
 
   if (input.photo) {
     formData.append("photo", input.photo);

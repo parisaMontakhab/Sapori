@@ -1,11 +1,5 @@
 "use client";
 
-import Image from "next/image";
-import Link from "next/link";
-import { useQueryClient } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { toast } from "sonner";
 import ChangePasswordForm from "@/components/ChangePasswordForm";
 import { useCurrentUser, useUpdateProfile } from "@/hooks/useAuth";
 import { useMyOrders } from "@/hooks/useOrders";
@@ -15,8 +9,14 @@ import { getErrorMessage } from "@/lib/errors";
 import { queryKeys } from "@/lib/queryKeys";
 import { getProductReviewHref, isReviewableOrder } from "@/lib/reviews";
 import { isInlinePhotoUrl } from "@/lib/userPhoto";
-import type { Order, Product, User } from "@/types";
 import { getAuthToken, getLoggedInUser, logout } from "@/store/auth";
+import type { Order, Product, User } from "@/types";
+import { useQueryClient } from "@tanstack/react-query";
+import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { toast } from "sonner";
 
 function getItemCount(order: Order): number {
   return order.items.reduce((sum, item) => sum + item.quantity, 0);
@@ -135,8 +135,6 @@ function ProfileAvatarImage({
   );
 }
 
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
 const inputClassName =
   "w-full min-w-0 rounded-xl border border-cream-dark bg-cream px-4 py-3 focus:border-basil focus:ring-2 focus:ring-basil/20 focus:outline-none";
 
@@ -149,7 +147,6 @@ export default function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreviewUrl, setPhotoPreviewUrl] = useState<string | null>(null);
   const photoPreviewUrlRef = useRef<string | null>(null);
@@ -184,7 +181,10 @@ export default function ProfilePage() {
     if (isOrdersError && ordersError && !ordersErrorToasted.current) {
       ordersErrorToasted.current = true;
       toast.error(
-        getErrorMessage(ordersError, "Something went wrong loading your orders."),
+        getErrorMessage(
+          ordersError,
+          "Something went wrong loading your orders.",
+        ),
       );
     }
 
@@ -222,7 +222,6 @@ export default function ProfilePage() {
   function handleStartEdit() {
     if (!user) return;
     setName(user.name);
-    setEmail(user.email);
     resetPhotoSelection();
     setValidationError("");
     setIsEditing(true);
@@ -232,7 +231,6 @@ export default function ProfilePage() {
     if (!user) return;
     resetPhotoSelection();
     setName(user.name);
-    setEmail(user.email);
     setValidationError("");
     setIsEditing(false);
   }
@@ -259,20 +257,9 @@ export default function ProfilePage() {
     event.preventDefault();
 
     const trimmedName = name.trim();
-    const trimmedEmail = email.trim();
 
     if (!trimmedName) {
       setValidationError("Name cannot be empty.");
-      return;
-    }
-
-    if (!trimmedEmail) {
-      setValidationError("Email cannot be empty.");
-      return;
-    }
-
-    if (!EMAIL_PATTERN.test(trimmedEmail)) {
-      setValidationError("Please enter a valid email address.");
       return;
     }
 
@@ -281,7 +268,6 @@ export default function ProfilePage() {
     updateProfileMutation.mutate(
       {
         name: trimmedName,
-        email: trimmedEmail,
         photo: photoFile ?? undefined,
       },
       {
@@ -341,7 +327,9 @@ export default function ProfilePage() {
   return (
     <div className="mx-auto max-w-4xl space-y-8">
       <div>
-        <h1 className="text-2xl font-bold text-foreground sm:text-3xl">My Profile</h1>
+        <h1 className="text-2xl font-bold text-foreground sm:text-3xl">
+          My Profile
+        </h1>
         <p className="mt-1 text-foreground/60">
           Manage your account and orders
         </p>
@@ -350,10 +338,7 @@ export default function ProfilePage() {
       <div className="overflow-hidden rounded-3xl bg-white shadow-md">
         <div className="bg-gradient-to-r from-tomato/10 via-orange/10 to-cream-dark px-4 py-5 sm:px-8">
           {isEditing ? (
-            <form
-              onSubmit={handleSaveProfile}
-              className="flex flex-col gap-5"
-            >
+            <form onSubmit={handleSaveProfile} className="flex flex-col gap-5">
               <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-5">
                 <ProfileAvatar
                   user={{ ...user, name: name.trim() || user.name }}
@@ -394,22 +379,6 @@ export default function ProfilePage() {
                       autoComplete="name"
                     />
                   </div>
-                  <div>
-                    <label
-                      htmlFor="profile-email"
-                      className="mb-1.5 block text-sm font-medium text-foreground/80"
-                    >
-                      Email
-                    </label>
-                    <input
-                      id="profile-email"
-                      type="email"
-                      value={email}
-                      onChange={(event) => setEmail(event.target.value)}
-                      className={inputClassName}
-                      autoComplete="email"
-                    />
-                  </div>
                 </div>
               </div>
 
@@ -433,7 +402,9 @@ export default function ProfilePage() {
                   disabled={updateProfileMutation.isPending}
                   className="min-h-11 rounded-full bg-tomato px-6 py-2.5 text-sm font-semibold text-white shadow-md transition-colors hover:bg-tomato-dark disabled:opacity-60"
                 >
-                  {updateProfileMutation.isPending ? "Saving..." : "Save Changes"}
+                  {updateProfileMutation.isPending
+                    ? "Saving..."
+                    : "Save Changes"}
                 </button>
               </div>
             </form>
@@ -532,7 +503,10 @@ export default function ProfilePage() {
           <p className="text-sm text-foreground/60">Loading orders...</p>
         ) : isOrdersError ? (
           <p className="rounded-lg bg-tomato/10 px-4 py-2 text-sm text-tomato">
-            {getErrorMessage(ordersError, "Something went wrong loading your orders.")}
+            {getErrorMessage(
+              ordersError,
+              "Something went wrong loading your orders.",
+            )}
           </p>
         ) : orders.length === 0 ? (
           <div className="rounded-2xl bg-white p-10 text-center shadow-md sm:p-12">
@@ -554,7 +528,9 @@ export default function ProfilePage() {
           <div className="space-y-4">
             {orders.map((order) => {
               const itemCount = getItemCount(order);
-              const firstImage = getProductImage(order.items[0]?.productId ?? "");
+              const firstImage = getProductImage(
+                order.items[0]?.productId ?? "",
+              );
 
               return (
                 <article
@@ -591,11 +567,14 @@ export default function ProfilePage() {
                           </span>
                         </div>
                         <p className="mt-2 text-sm text-foreground/60">
-                          {new Date(order.createdAt).toLocaleDateString("en-GB", {
-                            day: "numeric",
-                            month: "long",
-                            year: "numeric",
-                          })}
+                          {new Date(order.createdAt).toLocaleDateString(
+                            "en-GB",
+                            {
+                              day: "numeric",
+                              month: "long",
+                              year: "numeric",
+                            },
+                          )}
                         </p>
                         <p className="mt-1 text-sm font-medium text-foreground/80">
                           {formatItemSummary(itemCount)}
@@ -603,7 +582,9 @@ export default function ProfilePage() {
                       </div>
 
                       <div className="flex items-center justify-between gap-3 sm:flex-col sm:items-end sm:justify-center">
-                        <p className="text-sm text-foreground/60 sm:text-right">Total</p>
+                        <p className="text-sm text-foreground/60 sm:text-right">
+                          Total
+                        </p>
                         <p className="text-xl font-bold text-tomato sm:text-2xl">
                           €{order.total}
                         </p>
